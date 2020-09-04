@@ -23,6 +23,12 @@ using namespace std;
 // in UTF-16 both are 2 unit i.e. surrogate pairs
 const char* u8in = u8"\U0010FFFF\U0010AAAA";
 
+template<typename T>
+std::unique_ptr<T> to_unique_ptr(T *ptr)
+{
+    return std::unique_ptr<T>(ptr);
+}
+
 void utf8_to_utf32_in(const codecvt<char32_t, char, mbstate_t> &cvt)
 {
     char32_t u32out[2];
@@ -78,6 +84,9 @@ void utf8_to_utf32_in()
 {
     auto &cvt = use_facet<codecvt<char32_t, char, mbstate_t>>(locale::classic());
     utf8_to_utf32_in(cvt);
+
+    auto cvt_ptr = to_unique_ptr(new codecvt_utf8<char32_t>());
+    utf8_to_utf32_in(*cvt_ptr);
 }
 
 void utf8_to_utf16_in(const codecvt<char16_t, char, mbstate_t> &cvt)
@@ -188,6 +197,9 @@ void utf8_to_utf16_in()
 {
     auto &cvt = use_facet<codecvt<char16_t, char, mbstate_t>>(locale::classic());
     utf8_to_utf16_in(cvt);
+
+    auto cvt_ptr = to_unique_ptr(new codecvt_utf8_utf16<char16_t>());
+    utf8_to_utf16_in(*cvt_ptr);
 }
 
 //tests .out() function of codecvt<char16_t, char, mbstate>
@@ -292,13 +304,10 @@ void utf16_to_utf8_out(const codecvt<char16_t, char, mbstate_t> &cvt)
 void utf16_to_utf8_out()
 {
     auto &cvt = use_facet<codecvt<char16_t, char, mbstate_t>>(locale::classic());
-    utf8_to_utf16_in(cvt);
-}
+    utf16_to_utf8_out(cvt);
 
-template<typename T>
-std::unique_ptr<T> to_unique_ptr(T *ptr)
-{
-    return std::unique_ptr<T>(ptr);
+    auto cvt_ptr = to_unique_ptr(new codecvt_utf8_utf16<char16_t>());
+    utf16_to_utf8_out(*cvt_ptr);
 }
 
 void utf8_to_ucs2_in()
