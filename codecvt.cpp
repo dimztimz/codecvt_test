@@ -45,8 +45,8 @@ utf8_to_utf32_in_ok_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
   char32_t out[1] = {};
 
   auto state = mbstate_t{};
-  auto in_next = (const char *){};
-  auto out_next = (char32_t *){};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char32_t *) nullptr;
   auto res = codecvt_base::result ();
 
   res = cvt.in (state, in, in + 4, in_next, out, out + 1, out_next);
@@ -64,8 +64,8 @@ utf8_to_utf32_in_ok_2 (const codecvt<char32_t, char, mbstate_t> &cvt)
   char32_t out[2] = {};
 
   auto state = mbstate_t{};
-  auto in_next = (const char *){};
-  auto out_next = (char32_t *){};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char32_t *) nullptr;
   auto res = codecvt_base::result ();
 
   res = cvt.in (state, in, in + 8, in_next, out, out + 2, out_next);
@@ -83,8 +83,8 @@ utf8_to_utf32_in_ok_3 (const codecvt<char32_t, char, mbstate_t> &cvt)
   char32_t out[0] = {};
 
   auto state = mbstate_t{};
-  auto in_next = (const char *){};
-  auto out_next = (char32_t *){};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char32_t *) nullptr;
   auto res = codecvt_base::result ();
 
   res = cvt.in (state, in, in + 0, in_next, out, out + 0, out_next);
@@ -101,8 +101,8 @@ utf8_to_utf32_in_ok_4 (const codecvt<char32_t, char, mbstate_t> &cvt)
   char32_t out[1] = {};
 
   auto state = mbstate_t{};
-  auto in_next = (const char *){};
-  auto out_next = (char32_t *){};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char32_t *) nullptr;
   auto res = codecvt_base::result ();
 
   res = cvt.in (state, in, in + 0, in_next, out, out + 1, out_next);
@@ -120,8 +120,8 @@ utf8_to_utf32_in_partial_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
   char32_t out[1] = {};
 
   auto state = mbstate_t{};
-  auto in_next = (const char *){};
-  auto out_next = (char32_t *){};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char32_t *) nullptr;
   auto res = codecvt_base::result ();
 
   res = cvt.in (state, in, in + 6, in_next, out, out + 1, out_next);
@@ -139,8 +139,8 @@ utf8_to_utf32_in_partial_2 (const codecvt<char32_t, char, mbstate_t> &cvt)
   char32_t out[2] = {};
 
   auto state = mbstate_t{};
-  auto in_next = (const char *){};
-  auto out_next = (char32_t *){};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char32_t *) nullptr;
   auto res = codecvt_base::result ();
 
   res = cvt.in (state, in, in + 6, in_next, out, out + 2, out_next);
@@ -158,8 +158,8 @@ utf8_to_utf32_in_partial_3 (const codecvt<char32_t, char, mbstate_t> &cvt)
   char32_t out[1] = {};
 
   auto state = mbstate_t{};
-  auto in_next = (const char *){};
-  auto out_next = (char32_t *){};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char32_t *) nullptr;
   auto res = codecvt_base::result ();
 
   res = cvt.in (state, in, in + 8, in_next, out, out + 1, out_next);
@@ -178,8 +178,8 @@ utf8_to_utf32_in_error_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
   in[3] = 'z';
 
   auto state = mbstate_t{};
-  auto in_next = (const char *){};
-  auto out_next = (char32_t *){};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char32_t *) nullptr;
   auto res = codecvt_base::result ();
 
   res = cvt.in (state, in, in + 8, in_next, out, out + 2, out_next);
@@ -198,8 +198,8 @@ utf8_to_utf32_in_error_2 (const codecvt<char32_t, char, mbstate_t> &cvt)
   in[3] = '\xFF';
 
   auto state = mbstate_t{};
-  auto in_next = (const char *){};
-  auto out_next = (char32_t *){};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char32_t *) nullptr;
   auto res = codecvt_base::result ();
 
   res = cvt.in (state, in, in + 8, in_next, out, out + 2, out_next);
@@ -218,8 +218,8 @@ utf8_to_utf32_in_error_3 (const codecvt<char32_t, char, mbstate_t> &cvt)
   in[4] = 'z';
 
   auto state = mbstate_t{};
-  auto in_next = (const char *){};
-  auto out_next = (char32_t *){};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char32_t *) nullptr;
   auto res = codecvt_base::result ();
 
   res = cvt.in (state, in, in + 8, in_next, out, out + 3, out_next);
@@ -238,8 +238,8 @@ utf8_to_utf32_in_error_4 (const codecvt<char32_t, char, mbstate_t> &cvt)
   in[4] = '\xFF';
 
   auto state = mbstate_t{};
-  auto in_next = (const char *){};
-  auto out_next = (char32_t *){};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char32_t *) nullptr;
   auto res = codecvt_base::result ();
 
   res = cvt.in (state, in, in + 8, in_next, out, out + 3, out_next);
@@ -258,8 +258,8 @@ utf8_to_utf32_in_error_5 (const codecvt<char32_t, char, mbstate_t> &cvt)
   in[7] = 'z';
 
   auto state = mbstate_t{};
-  auto in_next = (const char *){};
-  auto out_next = (char32_t *){};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char32_t *) nullptr;
   auto res = codecvt_base::result ();
 
   res = cvt.in (state, in, in + 8, in_next, out, out + 3, out_next);
@@ -278,8 +278,8 @@ utf8_to_utf32_in_error_6 (const codecvt<char32_t, char, mbstate_t> &cvt)
   in[7] = '\xFF';
 
   auto state = mbstate_t{};
-  auto in_next = (const char *){};
-  auto out_next = (char32_t *){};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char32_t *) nullptr;
   auto res = codecvt_base::result ();
 
   res = cvt.in (state, in, in + 8, in_next, out, out + 3, out_next);
@@ -325,8 +325,8 @@ utf32_to_utf8_out_ok_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
   char out[4] = {};
 
   auto state = mbstate_t{};
-  auto in_next = (const char32_t *){};
-  auto out_next = (char *){};
+  auto in_next = (const char32_t *) nullptr;
+  auto out_next = (char *) nullptr;
   auto res = codecvt_base::result ();
 
   res = cvt.out (state, in, in + 1, in_next, out, out + 4, out_next);
@@ -343,8 +343,8 @@ utf32_to_utf8_out_ok_2 (const codecvt<char32_t, char, mbstate_t> &cvt)
   char out[8] = {};
 
   auto state = mbstate_t{};
-  auto in_next = (const char32_t *){};
-  auto out_next = (char *){};
+  auto in_next = (const char32_t *) nullptr;
+  auto out_next = (char *) nullptr;
   auto res = codecvt_base::result ();
 
   res = cvt.out (state, in, in + 2, in_next, out, out + 8, out_next);
@@ -361,8 +361,8 @@ utf32_to_utf8_out_partial_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
   char out[4] = {};
 
   auto state = mbstate_t{};
-  auto in_next = (const char32_t *){};
-  auto out_next = (char *){};
+  auto in_next = (const char32_t *) nullptr;
+  auto out_next = (char *) nullptr;
   auto res = codecvt_base::result ();
 
   res = cvt.out (state, in, in + 2, in_next, out, out + 4, out_next);
@@ -381,8 +381,8 @@ utf32_to_utf8_out_partial_2 (const codecvt<char32_t, char, mbstate_t> &cvt)
   char_traits<char>::copy (expected, u8in, 4);
 
   auto state = mbstate_t{};
-  auto in_next = (const char32_t *){};
-  auto out_next = (char *){};
+  auto in_next = (const char32_t *) nullptr;
+  auto out_next = (char *) nullptr;
   auto res = codecvt_base::result ();
 
   res = cvt.out (state, in, in + 2, in_next, out, out + 6, out_next);
@@ -400,8 +400,8 @@ utf32_to_utf8_out_error_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
   char expected[8] = "\U0010FFFF\0\0\0";
 
   auto state = mbstate_t{};
-  auto in_next = (const char32_t *){};
-  auto out_next = (char *){};
+  auto in_next = (const char32_t *) nullptr;
+  auto out_next = (char *) nullptr;
   auto res = codecvt_base::result ();
 
   res = cvt.out (state, in, in + 2, in_next, out, out + 8, out_next);
@@ -439,8 +439,8 @@ utf8_to_utf16_in_ok_1 (const codecvt<char16_t, char, mbstate_t> &cvt)
   char16_t u16out[2] = {};
 
   auto state = mbstate_t{};
-  auto in_next = (const char *){};
-  auto out_next = (char16_t *){};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char16_t *) nullptr;
   auto res = codecvt_base::result{};
 
   res = cvt.in (state, in, in + 4, in_next, u16out, u16out + 2, out_next);
@@ -457,8 +457,8 @@ utf8_to_utf16_in_ok_2 (const codecvt<char16_t, char, mbstate_t> &cvt)
   char16_t u16out[4] = {};
 
   auto state = mbstate_t{};
-  auto in_next = (const char *){};
-  auto out_next = (char16_t *){};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char16_t *) nullptr;
   auto res = codecvt_base::result{};
 
   res = cvt.in (state, in, in + 8, in_next, u16out, u16out + 4, out_next);
@@ -476,8 +476,8 @@ utf8_to_utf16_in_partial_1 (const codecvt<char16_t, char, mbstate_t> &cvt)
   char16_t expected[1] = {};
 
   auto state = mbstate_t{};
-  auto in_next = (const char *){};
-  auto out_next = (char16_t *){};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char16_t *) nullptr;
   auto res = codecvt_base::result{};
 
   res = cvt.in (state, in, in + 3, in_next, out, out + 1, out_next);
@@ -495,8 +495,8 @@ utf8_to_utf16_in_partial_2 (const codecvt<char16_t, char, mbstate_t> &cvt)
   char16_t expected[2] = {};
 
   auto state = mbstate_t{};
-  auto in_next = (const char *){};
-  auto out_next = (char16_t *){};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char16_t *) nullptr;
   auto res = codecvt_base::result{};
 
   res = cvt.in (state, in, in + 3, in_next, out, out + 2, out_next);
@@ -513,8 +513,8 @@ utf8_to_utf16_in (const codecvt<char16_t, char, mbstate_t> &cvt)
   char16_t out[4] = {};
 
   auto state = mbstate_t{};
-  auto in_next = (const char *){};
-  auto out_next = (char16_t *){};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char16_t *) nullptr;
   auto res = codecvt_base::result{};
 
   utf8_to_utf16_in_ok_1 (cvt);
