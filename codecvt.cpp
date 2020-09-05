@@ -290,6 +290,28 @@ utf8_to_utf32_in_error_6 (const codecvt<char32_t, char, mbstate_t> &cvt)
 }
 
 void
+utf8_to_utf32_in_error_7 (const codecvt<char32_t, char, mbstate_t> &cvt)
+{
+  char in[7] = {};
+  char32_t out[3] = {};
+  char_traits<char>::copy (in, u8in, 7);
+  in[5] = 'z';
+  // last CP has two errors. its second code unit is malformed and it misses its
+  // last.
+
+  auto state = mbstate_t{};
+  auto in_next = (const char *) nullptr;
+  auto out_next = (char32_t *) nullptr;
+  auto res = codecvt_base::result ();
+
+  res = cvt.in (state, in, in + 7, in_next, out, out + 3, out_next);
+  VERIFY (res == cvt.error);
+  VERIFY (in_next == in + 4);
+  VERIFY (out_next == out + 1);
+  VERIFY (out[0] == u32in[0] && out[1] == 0 && out[2] == 0);
+}
+
+void
 utf8_to_utf32_in (const codecvt<char32_t, char, mbstate_t> &cvt)
 {
   utf8_to_utf32_in_ok_1 (cvt);
@@ -305,6 +327,7 @@ utf8_to_utf32_in (const codecvt<char32_t, char, mbstate_t> &cvt)
   utf8_to_utf32_in_error_4 (cvt);
   utf8_to_utf32_in_error_5 (cvt);
   utf8_to_utf32_in_error_6 (cvt);
+  utf8_to_utf32_in_error_7 (cvt);
 }
 
 void
