@@ -600,101 +600,100 @@ utf8_to_utf16_in ()
 void
 utf16_to_utf8_out (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
-  const char16_t *u16in = u"\U0010FFFF\U0010AAAA";
-  char u8out[8];
+  auto in = u16in;
+  char out[8];
 
   auto state = mbstate_t{};
-  auto in_ptr = u16in;
-  auto out_ptr = u8out;
+  auto in_next = in;
+  auto out_next = out;
 
   state = {};
-  in_ptr = nullptr;
-  out_ptr = nullptr;
-  auto res
-    = cvt.out (state, u16in, u16in + 1, in_ptr, u8out, u8out + 3, out_ptr);
+  in_next = nullptr;
+  out_next = nullptr;
+  auto res = cvt.out (state, in, in + 1, in_next, out, out + 3, out_next);
   VERIFY (res == cvt.partial);
-  VERIFY (in_ptr == u16in);
-  VERIFY (out_ptr == u8out);
+  VERIFY (in_next == in);
+  VERIFY (out_next == out);
 
   state = {};
-  in_ptr = nullptr;
-  out_ptr = nullptr;
-  res = cvt.out (state, u16in, u16in + 1, in_ptr, u8out, u8out + 4, out_ptr);
+  in_next = nullptr;
+  out_next = nullptr;
+  res = cvt.out (state, in, in + 1, in_next, out, out + 4, out_next);
   VERIFY (res == cvt.partial);
-  VERIFY (in_ptr == u16in);
-  VERIFY (out_ptr == u8out);
+  VERIFY (in_next == in);
+  VERIFY (out_next == out);
 
   state = {};
-  in_ptr = nullptr;
-  out_ptr = nullptr;
-  res = cvt.out (state, u16in, u16in + 2, in_ptr, u8out, u8out + 3, out_ptr);
+  in_next = nullptr;
+  out_next = nullptr;
+  res = cvt.out (state, in, in + 2, in_next, out, out + 3, out_next);
   VERIFY (res == cvt.partial);
-  VERIFY (in_ptr == u16in);
-  VERIFY (out_ptr == u8out);
+  VERIFY (in_next == in);
+  VERIFY (out_next == out);
 
   state = {};
-  in_ptr = nullptr;
-  out_ptr = nullptr;
-  res = cvt.out (state, u16in, u16in + 2, in_ptr, u8out, u8out + 4, out_ptr);
+  in_next = nullptr;
+  out_next = nullptr;
+  res = cvt.out (state, in, in + 2, in_next, out, out + 4, out_next);
   VERIFY (res == cvt.ok);
-  VERIFY (in_ptr == u16in + 2);
-  VERIFY (out_ptr == u8out + 4);
+  VERIFY (in_next == in + 2);
+  VERIFY (out_next == out + 4);
 
   state = {};
-  in_ptr = nullptr;
-  out_ptr = nullptr;
-  res = cvt.out (state, u16in, u16in + 3, in_ptr, u8out, u8out + 3, out_ptr);
+  in_next = nullptr;
+  out_next = nullptr;
+  res = cvt.out (state, in, in + 3, in_next, out, out + 3, out_next);
   VERIFY (res == cvt.partial);
-  VERIFY (in_ptr == u16in);
-  VERIFY (out_ptr == u8out);
+  VERIFY (in_next == in);
+  VERIFY (out_next == out);
 
   state = {};
-  in_ptr = nullptr;
-  out_ptr = nullptr;
-  res = cvt.out (state, u16in, u16in + 3, in_ptr, u8out, u8out + 4, out_ptr);
+  in_next = nullptr;
+  out_next = nullptr;
+  res = cvt.out (state, in, in + 3, in_next, out, out + 4, out_next);
   VERIFY (res == cvt.partial);
-  VERIFY (in_ptr == u16in + 2);
-  VERIFY (out_ptr == u8out + 4);
+  VERIFY (in_next == in + 2);
+  VERIFY (out_next == out + 4);
 
   state = {};
-  in_ptr = nullptr;
-  out_ptr = nullptr;
-  res = cvt.out (state, u16in, u16in + 3, in_ptr, u8out, u8out + 8, out_ptr);
+  in_next = nullptr;
+  out_next = nullptr;
+  res = cvt.out (state, in, in + 3, in_next, out, out + 8, out_next);
   VERIFY (res == cvt.partial);
-  VERIFY (in_ptr == u16in + 2);
-  VERIFY (out_ptr == u8out + 4);
+  VERIFY (in_next == in + 2);
+  VERIFY (out_next == out + 4);
 
   state = {};
-  in_ptr = nullptr;
-  out_ptr = nullptr;
-  res = cvt.out (state, u16in, u16in + 4, in_ptr, u8out, u8out + 3, out_ptr);
+  in_next = nullptr;
+  out_next = nullptr;
+  res = cvt.out (state, in, in + 4, in_next, out, out + 3, out_next);
   VERIFY (res == cvt.partial);
-  VERIFY (in_ptr == u16in);
-  VERIFY (out_ptr == u8out);
+  VERIFY (in_next == in);
+  VERIFY (out_next == out);
 
   state = {};
-  in_ptr = nullptr;
-  out_ptr = nullptr;
-  res = cvt.out (state, u16in, u16in + 4, in_ptr, u8out, u8out + 4, out_ptr);
+  in_next = nullptr;
+  out_next = nullptr;
+  res = cvt.out (state, in, in + 4, in_next, out, out + 4, out_next);
   VERIFY (res == cvt.partial);
-  VERIFY (in_ptr == u16in + 2);
-  VERIFY (out_ptr == u8out + 4);
+  VERIFY (in_next == in + 2);
+  VERIFY (out_next == out + 4);
 
   state = {};
-  in_ptr = nullptr;
-  out_ptr = nullptr;
-  res = cvt.out (state, u16in, u16in + 4, in_ptr, u8out, u8out + 6, out_ptr);
+  in_next = nullptr;
+  out_next = nullptr;
+  res = cvt.out (state, in, in + 4, in_next, out, out + 6, out_next);
   VERIFY (res == cvt.partial);
-  VERIFY (in_ptr == u16in + 2);
-  VERIFY (out_ptr == u8out + 4);
+  VERIFY (in_next == in + 2);
+  VERIFY (out_next == out + 4);
 
   state = {};
-  in_ptr = nullptr;
-  out_ptr = nullptr;
-  res = cvt.out (state, u16in, u16in + 4, in_ptr, u8out, u8out + 8, out_ptr);
+  in_next = nullptr;
+  out_next = nullptr;
+  res = cvt.out (state, in, in + 4, in_next, out, out + 8, out_next);
   VERIFY (res == cvt.ok);
-  VERIFY (in_ptr == u16in + 4);
-  VERIFY (out_ptr == u8out + 8);
+  VERIFY (in_next == in + 4);
+  VERIFY (out_next == out + 8);
 }
 
 void
