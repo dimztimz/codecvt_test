@@ -26,7 +26,11 @@ using namespace std;
 
 // 2 code points, both are 4 byte in UTF-8.
 // in UTF-16 both are 2 unit i.e. surrogate pairs
-const char *u8in = u8"\U0010FFFF\U0010AAAA";
+const char u8in[] = u8"\U0010FFFF\U0010AAAA";
+const char16_t u16in[] = u"\U0010FFFF\U0010AAAA";
+const char32_t u32in[] = U"\U0010FFFF\U0010AAAA";
+
+// template <class T, size_t N> size_t len (T (&)[N]) { return N - 1; }
 
 template <typename T>
 std::unique_ptr<T>
@@ -39,7 +43,7 @@ void
 utf8_to_utf32_in (const codecvt<char32_t, char, mbstate_t> &cvt)
 {
   auto in = u8in;
-  char32_t out[2];
+  char32_t out[2] = {};
 
   // 4 byte (1cp) input buf, 1 U32 cp output buf
   auto state = mbstate_t{};
@@ -49,43 +53,55 @@ utf8_to_utf32_in (const codecvt<char32_t, char, mbstate_t> &cvt)
   VERIFY (res == cvt.ok);
   VERIFY (in_next == in + 4);
   VERIFY (out_next == out + 1);
-  cout << hex << out[0] << '\n';
+  VERIFY (out[0] == u32in[0] && out[1] == 0);
 
   // 6 byte (1cp + 1 incomplete cp) input buf, 1 U32 cp output buf
   state = {};
   in_next = nullptr;
   out_next = nullptr;
+  for (auto &c : out)
+    c = 0;
   res = cvt.in (state, in, in + 6, in_next, out, out + 1, out_next);
   VERIFY (res == cvt.partial);
   VERIFY (in_next == in + 4);
   VERIFY (out_next == out + 1);
+  VERIFY (out[0] == u32in[0] && out[1] == 0);
 
   // 6 byte (1cp + 1 incomplete cp) input buf, 2 U32 cp output buf
   state = {};
   in_next = nullptr;
   out_next = nullptr;
+  for (auto &c : out)
+    c = 0;
   res = cvt.in (state, in, in + 6, in_next, out, out + 2, out_next);
   VERIFY (res == cvt.partial);
   VERIFY (in_next == in + 4);
   VERIFY (out_next == out + 1);
+  VERIFY (out[0] == u32in[0] && out[1] == 0);
 
   // 8 byte (2cp) input buf, 1 U32 cp output buf
   state = {};
   in_next = nullptr;
   out_next = nullptr;
+  for (auto &c : out)
+    c = 0;
   res = cvt.in (state, in, in + 8, in_next, out, out + 1, out_next);
   VERIFY (res == cvt.partial);
   VERIFY (in_next == in + 4);
   VERIFY (out_next == out + 1);
+  VERIFY (out[0] == u32in[0] && out[1] == 0);
 
   // 8 byte (2cp) input buf, 2 U32 cp output buf
   state = {};
   in_next = nullptr;
   out_next = nullptr;
+  for (auto &c : out)
+    c = 0;
   res = cvt.in (state, in, in + 8, in_next, out, out + 2, out_next);
   VERIFY (res == cvt.ok);
   VERIFY (in_next == in + 8);
   VERIFY (out_next == out + 2);
+  VERIFY (out[0] == u32in[0] && out[1] == u32in[1]);
 }
 
 void
