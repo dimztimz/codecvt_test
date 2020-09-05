@@ -77,6 +77,43 @@ utf8_to_utf32_in_ok_2 (const codecvt<char32_t, char, mbstate_t> &cvt)
   VERIFY (out[0] == u32in[0] && out[1] == u32in[1]);
 }
 
+// 0 byte (0cp) input buf, 0 U32 cp output buf
+void
+utf8_to_utf32_in_ok_3 (const codecvt<char32_t, char, mbstate_t> &cvt)
+{
+  auto in = u8in;
+  char32_t out[0] = {};
+
+  auto state = mbstate_t{};
+  auto in_next = (const char *){};
+  auto out_next = (char32_t *){};
+  auto res = codecvt_base::result ();
+
+  res = cvt.in (state, in, in + 0, in_next, out, out + 0, out_next);
+  VERIFY (res == cvt.ok);
+  VERIFY (in_next == in + 0);
+  VERIFY (out_next == out + 0);
+}
+
+// 0 byte (0cp) input buf, 1 U32 cp output buf
+void
+utf8_to_utf32_in_ok_4 (const codecvt<char32_t, char, mbstate_t> &cvt)
+{
+  auto in = u8in;
+  char32_t out[1] = {};
+
+  auto state = mbstate_t{};
+  auto in_next = (const char *){};
+  auto out_next = (char32_t *){};
+  auto res = codecvt_base::result ();
+
+  res = cvt.in (state, in, in + 0, in_next, out, out + 1, out_next);
+  VERIFY (res == cvt.ok);
+  VERIFY (in_next == in + 0);
+  VERIFY (out_next == out + 0);
+  VERIFY (out[0] == 0);
+}
+
 // 6 byte (1cp + 1 incomplete cp) input buf, 1 U32 cp output buf
 void
 utf8_to_utf32_in_partial_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
@@ -139,6 +176,8 @@ utf8_to_utf32_in (const codecvt<char32_t, char, mbstate_t> &cvt)
 {
   utf8_to_utf32_in_ok_1 (cvt);
   utf8_to_utf32_in_ok_2 (cvt);
+  utf8_to_utf32_in_ok_3 (cvt);
+  utf8_to_utf32_in_ok_4 (cvt);
   utf8_to_utf32_in_partial_1 (cvt);
   utf8_to_utf32_in_partial_2 (cvt);
   utf8_to_utf32_in_partial_3 (cvt);
