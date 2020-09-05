@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <codecvt>
-#include <cstring>
+#include <cstdio>
 #include <iostream>
 #include <locale>
 #include <string>
@@ -172,6 +172,84 @@ utf8_to_utf32_in_partial_3 (const codecvt<char32_t, char, mbstate_t> &cvt)
 }
 
 void
+utf8_to_utf32_in_error_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
+{
+  char in[8] = {};
+  char32_t out[2] = {};
+  char_traits<char>::copy (in, u8in, 8);
+  in[3] = 'z';
+
+  auto state = mbstate_t{};
+  auto in_next = (const char *){};
+  auto out_next = (char32_t *){};
+  auto res = codecvt_base::result ();
+
+  res = cvt.in (state, in, in + 8, in_next, out, out + 2, out_next);
+  VERIFY (res == cvt.error);
+  VERIFY (in_next == in + 0);
+  VERIFY (out_next == out + 0);
+}
+
+void
+utf8_to_utf32_in_error_2 (const codecvt<char32_t, char, mbstate_t> &cvt)
+{
+  char in[8] = {};
+  char32_t out[2] = {};
+  char_traits<char>::copy (in, u8in, 8);
+  in[3] = '\xFF';
+
+  auto state = mbstate_t{};
+  auto in_next = (const char *){};
+  auto out_next = (char32_t *){};
+  auto res = codecvt_base::result ();
+
+  res = cvt.in (state, in, in + 8, in_next, out, out + 2, out_next);
+  VERIFY (res == cvt.error);
+  VERIFY (in_next == in + 0);
+  VERIFY (out_next == out + 0);
+}
+
+void
+utf8_to_utf32_in_error_3 (const codecvt<char32_t, char, mbstate_t> &cvt)
+{
+  char in[8] = {};
+  char32_t out[3] = {};
+  char_traits<char>::copy (in, u8in, 8);
+  in[4] = 'z';
+
+  auto state = mbstate_t{};
+  auto in_next = (const char *){};
+  auto out_next = (char32_t *){};
+  auto res = codecvt_base::result ();
+
+  res = cvt.in (state, in, in + 8, in_next, out, out + 3, out_next);
+  VERIFY (res == cvt.error);
+  VERIFY (in_next == in + 5);
+  VERIFY (out_next == out + 2);
+  VERIFY (out[0] == u32in[0] && out[1] == 'z');
+}
+
+void
+utf8_to_utf32_in_error_4 (const codecvt<char32_t, char, mbstate_t> &cvt)
+{
+  char in[8] = {};
+  char32_t out[3] = {};
+  char_traits<char>::copy (in, u8in, 8);
+  in[4] = '\xFF';
+
+  auto state = mbstate_t{};
+  auto in_next = (const char *){};
+  auto out_next = (char32_t *){};
+  auto res = codecvt_base::result ();
+
+  res = cvt.in (state, in, in + 8, in_next, out, out + 3, out_next);
+  VERIFY (res == cvt.error);
+  VERIFY (in_next == in + 4);
+  VERIFY (out_next == out + 1);
+  VERIFY (out[0] == u32in[0]);
+}
+
+void
 utf8_to_utf32_in (const codecvt<char32_t, char, mbstate_t> &cvt)
 {
   utf8_to_utf32_in_ok_1 (cvt);
@@ -181,6 +259,10 @@ utf8_to_utf32_in (const codecvt<char32_t, char, mbstate_t> &cvt)
   utf8_to_utf32_in_partial_1 (cvt);
   utf8_to_utf32_in_partial_2 (cvt);
   utf8_to_utf32_in_partial_3 (cvt);
+  utf8_to_utf32_in_error_1 (cvt);
+  utf8_to_utf32_in_error_2 (cvt);
+  utf8_to_utf32_in_error_3 (cvt);
+  utf8_to_utf32_in_error_4 (cvt);
 }
 
 void
