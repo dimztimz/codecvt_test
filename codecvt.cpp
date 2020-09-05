@@ -30,7 +30,7 @@ const char u8in[] = u8"\U0010FFFF\U0010AAAA";
 const char16_t u16in[] = u"\U0010FFFF\U0010AAAA";
 const char32_t u32in[] = U"\U0010FFFF\U0010AAAA";
 
-// template <class T, size_t N> size_t len (T (&)[N]) { return N - 1; }
+template <class T, size_t N> size_t len (T (&)[N]) { return N - 1; }
 
 template <typename T>
 std::unique_ptr<T>
@@ -188,6 +188,7 @@ utf8_to_utf32_in_error_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
   VERIFY (res == cvt.error);
   VERIFY (in_next == in + 0);
   VERIFY (out_next == out + 0);
+  VERIFY (out[0] == 0 && out[1] == 0);
 }
 
 void
@@ -207,6 +208,7 @@ utf8_to_utf32_in_error_2 (const codecvt<char32_t, char, mbstate_t> &cvt)
   VERIFY (res == cvt.error);
   VERIFY (in_next == in + 0);
   VERIFY (out_next == out + 0);
+  VERIFY (out[0] == 0 && out[1] == 0);
 }
 
 void
@@ -226,7 +228,7 @@ utf8_to_utf32_in_error_3 (const codecvt<char32_t, char, mbstate_t> &cvt)
   VERIFY (res == cvt.error);
   VERIFY (in_next == in + 5);
   VERIFY (out_next == out + 2);
-  VERIFY (out[0] == u32in[0] && out[1] == 'z');
+  VERIFY (out[0] == u32in[0] && out[1] == 'z' && out[2] == 0);
 }
 
 void
@@ -246,7 +248,47 @@ utf8_to_utf32_in_error_4 (const codecvt<char32_t, char, mbstate_t> &cvt)
   VERIFY (res == cvt.error);
   VERIFY (in_next == in + 4);
   VERIFY (out_next == out + 1);
-  VERIFY (out[0] == u32in[0]);
+  VERIFY (out[0] == u32in[0] && out[1] == 0 && out[2] == 0);
+}
+
+void
+utf8_to_utf32_in_error_5 (const codecvt<char32_t, char, mbstate_t> &cvt)
+{
+  char in[8] = {};
+  char32_t out[3] = {};
+  char_traits<char>::copy (in, u8in, 8);
+  in[7] = 'z';
+
+  auto state = mbstate_t{};
+  auto in_next = (const char *){};
+  auto out_next = (char32_t *){};
+  auto res = codecvt_base::result ();
+
+  res = cvt.in (state, in, in + 8, in_next, out, out + 3, out_next);
+  VERIFY (res == cvt.error);
+  VERIFY (in_next == in + 4);
+  VERIFY (out_next == out + 1);
+  VERIFY (out[0] == u32in[0] && out[1] == 0 && out[2] == 0);
+}
+
+void
+utf8_to_utf32_in_error_6 (const codecvt<char32_t, char, mbstate_t> &cvt)
+{
+  char in[8] = {};
+  char32_t out[3] = {};
+  char_traits<char>::copy (in, u8in, 8);
+  in[7] = '\xFF';
+
+  auto state = mbstate_t{};
+  auto in_next = (const char *){};
+  auto out_next = (char32_t *){};
+  auto res = codecvt_base::result ();
+
+  res = cvt.in (state, in, in + 8, in_next, out, out + 3, out_next);
+  VERIFY (res == cvt.error);
+  VERIFY (in_next == in + 4);
+  VERIFY (out_next == out + 1);
+  VERIFY (out[0] == u32in[0] && out[1] == 0 && out[2] == 0);
 }
 
 void
@@ -263,6 +305,8 @@ utf8_to_utf32_in (const codecvt<char32_t, char, mbstate_t> &cvt)
   utf8_to_utf32_in_error_2 (cvt);
   utf8_to_utf32_in_error_3 (cvt);
   utf8_to_utf32_in_error_4 (cvt);
+  utf8_to_utf32_in_error_5 (cvt);
+  utf8_to_utf32_in_error_6 (cvt);
 }
 
 void
@@ -274,6 +318,120 @@ utf8_to_utf32_in ()
 
   auto cvt_ptr = to_unique_ptr (new codecvt_utf8<char32_t> ());
   utf8_to_utf32_in (*cvt_ptr);
+}
+
+void
+utf32_to_utf8_out_ok_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
+{
+  auto in = u32in;
+  char out[4] = {};
+
+  auto state = mbstate_t{};
+  auto in_next = (const char32_t *){};
+  auto out_next = (char *){};
+  auto res = codecvt_base::result ();
+
+  res = cvt.out (state, in, in + 1, in_next, out, end (out), out_next);
+  VERIFY (res == cvt.ok);
+  VERIFY (in_next == in + 1);
+  VERIFY (out_next == out + 4);
+  VERIFY (char_traits<char>::compare (out, u8in, len (out)) == 0);
+}
+
+void
+utf32_to_utf8_out_ok_2 (const codecvt<char32_t, char, mbstate_t> &cvt)
+{
+  auto in = u32in;
+  char out[8] = {};
+
+  auto state = mbstate_t{};
+  auto in_next = (const char32_t *){};
+  auto out_next = (char *){};
+  auto res = codecvt_base::result ();
+
+  res = cvt.out (state, in, in + 2, in_next, out, end (out), out_next);
+  VERIFY (res == cvt.ok);
+  VERIFY (in_next == in + 2);
+  VERIFY (out_next == out + 8);
+  VERIFY (char_traits<char>::compare (out, u8in, len (out)) == 0);
+}
+
+void
+utf32_to_utf8_out_partial_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
+{
+  auto in = u32in;
+  char out[4] = {};
+
+  auto state = mbstate_t{};
+  auto in_next = (const char32_t *){};
+  auto out_next = (char *){};
+  auto res = codecvt_base::result ();
+
+  res = cvt.out (state, in, in + 2, in_next, out, end (out), out_next);
+  VERIFY (res == cvt.partial);
+  VERIFY (in_next == in + 1);
+  VERIFY (out_next == out + 4);
+  VERIFY (char_traits<char>::compare (out, u8in, len (out)) == 0);
+}
+
+void
+utf32_to_utf8_out_partial_2 (const codecvt<char32_t, char, mbstate_t> &cvt)
+{
+  auto in = u32in;
+  char out[6] = {};
+  char expected[6] = {};
+  char_traits<char>::copy (expected, u8in, 4);
+
+  auto state = mbstate_t{};
+  auto in_next = (const char32_t *){};
+  auto out_next = (char *){};
+  auto res = codecvt_base::result ();
+
+  res = cvt.out (state, in, in + 2, in_next, out, end (out), out_next);
+  VERIFY (res == cvt.partial);
+  VERIFY (in_next == in + 1);
+  VERIFY (out_next == out + 4);
+  VERIFY (char_traits<char>::compare (out, expected, len (out)) == 0);
+}
+
+void
+utf32_to_utf8_out_error_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
+{
+  const char32_t in[2] = {0x0010FFFF, 0xFFFFFFFF};
+  char out[8] = {};
+  char expected[8] = "\U0010FFFF\0\0\0";
+
+  auto state = mbstate_t{};
+  auto in_next = (const char32_t *){};
+  auto out_next = (char *){};
+  auto res = codecvt_base::result ();
+
+  res = cvt.out (state, in, in + 2, in_next, out, out + 8, out_next);
+  VERIFY (res == cvt.error);
+  VERIFY (in_next == in + 1);
+  VERIFY (out_next == out + 4);
+  VERIFY (char_traits<char>::compare (out, expected, len (out)) == 0);
+}
+
+void
+utf32_to_utf8_out (const codecvt<char32_t, char, mbstate_t> &cvt)
+{
+  utf32_to_utf8_out_ok_1 (cvt);
+  utf32_to_utf8_out_ok_2 (cvt);
+  utf32_to_utf8_out_partial_1 (cvt);
+  utf32_to_utf8_out_partial_2 (cvt);
+  utf32_to_utf8_out_error_1 (cvt);
+}
+
+void
+utf32_to_utf8_out ()
+{
+  auto &cvt
+    = use_facet<codecvt<char32_t, char, mbstate_t>> (locale::classic ());
+  utf32_to_utf8_out (cvt);
+
+  auto cvt_ptr = to_unique_ptr (new codecvt_utf8<char32_t> ());
+  utf32_to_utf8_out (*cvt_ptr);
 }
 
 void
@@ -590,8 +748,9 @@ int
 main ()
 {
   utf8_to_utf32_in ();
-  utf8_to_utf16_in ();
+  utf32_to_utf8_out ();
 
+  utf8_to_utf16_in ();
   utf16_to_utf8_out ();
 
   utf8_to_ucs2_in ();
