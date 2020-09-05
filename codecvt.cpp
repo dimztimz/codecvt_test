@@ -80,7 +80,7 @@ void
 utf8_to_utf32_in_ok_3 (const codecvt<char32_t, char, mbstate_t> &cvt)
 {
   auto in = u8in;
-  char32_t out[0] = {};
+  char32_t *out = nullptr;
 
   auto state = mbstate_t{};
   auto in_next = (const char *) nullptr;
