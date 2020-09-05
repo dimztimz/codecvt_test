@@ -30,8 +30,6 @@ const char u8in[] = u8"\U0010FFFF\U0010AAAA";
 const char16_t u16in[] = u"\U0010FFFF\U0010AAAA";
 const char32_t u32in[] = U"\U0010FFFF\U0010AAAA";
 
-template <class T, size_t N> size_t len (T (&)[N]) { return N - 1; }
-
 template <typename T>
 std::unique_ptr<T>
 to_unique_ptr (T *ptr)
@@ -138,7 +136,7 @@ void
 utf8_to_utf32_in_partial_2 (const codecvt<char32_t, char, mbstate_t> &cvt)
 {
   auto in = u8in;
-  char32_t out[1] = {};
+  char32_t out[2] = {};
 
   auto state = mbstate_t{};
   auto in_next = (const char *){};
@@ -149,7 +147,7 @@ utf8_to_utf32_in_partial_2 (const codecvt<char32_t, char, mbstate_t> &cvt)
   VERIFY (res == cvt.partial);
   VERIFY (in_next == in + 4);
   VERIFY (out_next == out + 1);
-  VERIFY (out[0] == u32in[0]);
+  VERIFY (out[0] == u32in[0] && out[1] == 0);
 }
 
 // 8 byte (2cp) input buf, 1 U32 cp output buf
@@ -331,11 +329,11 @@ utf32_to_utf8_out_ok_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
   auto out_next = (char *){};
   auto res = codecvt_base::result ();
 
-  res = cvt.out (state, in, in + 1, in_next, out, end (out), out_next);
+  res = cvt.out (state, in, in + 1, in_next, out, out + 4, out_next);
   VERIFY (res == cvt.ok);
   VERIFY (in_next == in + 1);
   VERIFY (out_next == out + 4);
-  VERIFY (char_traits<char>::compare (out, u8in, len (out)) == 0);
+  VERIFY (char_traits<char>::compare (out, u8in, 4) == 0);
 }
 
 void
@@ -349,11 +347,11 @@ utf32_to_utf8_out_ok_2 (const codecvt<char32_t, char, mbstate_t> &cvt)
   auto out_next = (char *){};
   auto res = codecvt_base::result ();
 
-  res = cvt.out (state, in, in + 2, in_next, out, end (out), out_next);
+  res = cvt.out (state, in, in + 2, in_next, out, out + 8, out_next);
   VERIFY (res == cvt.ok);
   VERIFY (in_next == in + 2);
   VERIFY (out_next == out + 8);
-  VERIFY (char_traits<char>::compare (out, u8in, len (out)) == 0);
+  VERIFY (char_traits<char>::compare (out, u8in, 8) == 0);
 }
 
 void
@@ -367,11 +365,11 @@ utf32_to_utf8_out_partial_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
   auto out_next = (char *){};
   auto res = codecvt_base::result ();
 
-  res = cvt.out (state, in, in + 2, in_next, out, end (out), out_next);
+  res = cvt.out (state, in, in + 2, in_next, out, out + 4, out_next);
   VERIFY (res == cvt.partial);
   VERIFY (in_next == in + 1);
   VERIFY (out_next == out + 4);
-  VERIFY (char_traits<char>::compare (out, u8in, len (out)) == 0);
+  VERIFY (char_traits<char>::compare (out, u8in, 4) == 0);
 }
 
 void
@@ -387,11 +385,11 @@ utf32_to_utf8_out_partial_2 (const codecvt<char32_t, char, mbstate_t> &cvt)
   auto out_next = (char *){};
   auto res = codecvt_base::result ();
 
-  res = cvt.out (state, in, in + 2, in_next, out, end (out), out_next);
+  res = cvt.out (state, in, in + 2, in_next, out, out + 6, out_next);
   VERIFY (res == cvt.partial);
   VERIFY (in_next == in + 1);
   VERIFY (out_next == out + 4);
-  VERIFY (char_traits<char>::compare (out, expected, len (out)) == 0);
+  VERIFY (char_traits<char>::compare (out, expected, 6) == 0);
 }
 
 void
@@ -410,7 +408,7 @@ utf32_to_utf8_out_error_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
   VERIFY (res == cvt.error);
   VERIFY (in_next == in + 1);
   VERIFY (out_next == out + 4);
-  VERIFY (char_traits<char>::compare (out, expected, len (out)) == 0);
+  VERIFY (char_traits<char>::compare (out, expected, 8) == 0);
 }
 
 void
