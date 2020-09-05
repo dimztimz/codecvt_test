@@ -433,109 +433,156 @@ utf32_to_utf8_out ()
 }
 
 void
+utf8_to_utf16_in_ok_1 (const codecvt<char16_t, char, mbstate_t> &cvt)
+{
+  auto in = u8in;
+  char16_t u16out[2] = {};
+
+  auto state = mbstate_t{};
+  auto in_next = (const char *){};
+  auto out_next = (char16_t *){};
+  auto res = codecvt_base::result{};
+
+  res = cvt.in (state, in, in + 4, in_next, u16out, u16out + 2, out_next);
+  VERIFY (res == cvt.ok);
+  VERIFY (in_next == in + 4);
+  VERIFY (out_next == u16out + 2);
+  VERIFY (char_traits<char16_t>::compare (u16out, u16in, 2) == 0);
+}
+
+void
+utf8_to_utf16_in_ok_2 (const codecvt<char16_t, char, mbstate_t> &cvt)
+{
+  auto in = u8in;
+  char16_t u16out[4] = {};
+
+  auto state = mbstate_t{};
+  auto in_next = (const char *){};
+  auto out_next = (char16_t *){};
+  auto res = codecvt_base::result{};
+
+  res = cvt.in (state, in, in + 8, in_next, u16out, u16out + 4, out_next);
+  VERIFY (res == cvt.ok);
+  VERIFY (in_next == in + 8);
+  VERIFY (out_next == u16out + 4);
+  VERIFY (char_traits<char16_t>::compare (u16out, u16in, 4) == 0);
+}
+
+void
+utf8_to_utf16_in_partial_1 (const codecvt<char16_t, char, mbstate_t> &cvt)
+{
+  auto in = u8in;
+  char16_t out[1] = {};
+  char16_t expected[1] = {};
+
+  auto state = mbstate_t{};
+  auto in_next = (const char *){};
+  auto out_next = (char16_t *){};
+  auto res = codecvt_base::result{};
+
+  res = cvt.in (state, in, in + 3, in_next, out, out + 1, out_next);
+  VERIFY (res == cvt.partial);
+  VERIFY (out_next == out);
+  VERIFY (in_next == in);
+  VERIFY (char_traits<char16_t>::compare (out, expected, 1) == 0);
+}
+
+void
+utf8_to_utf16_in_partial_2 (const codecvt<char16_t, char, mbstate_t> &cvt)
+{
+  auto in = u8in;
+  char16_t out[2] = {};
+  char16_t expected[2] = {};
+
+  auto state = mbstate_t{};
+  auto in_next = (const char *){};
+  auto out_next = (char16_t *){};
+  auto res = codecvt_base::result{};
+
+  res = cvt.in (state, in, in + 3, in_next, out, out + 2, out_next);
+  VERIFY (res == cvt.partial);
+  VERIFY (out_next == out);
+  VERIFY (in_next == in);
+  VERIFY (char_traits<char16_t>::compare (out, expected, 2) == 0);
+}
+
+void
 utf8_to_utf16_in (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
   auto in = u8in;
-  char16_t u16out[4];
+  char16_t out[4] = {};
 
   auto state = mbstate_t{};
-  auto in_next = u8in;
-  auto out_next = u16out;
+  auto in_next = (const char *){};
+  auto out_next = (char16_t *){};
+  auto res = codecvt_base::result{};
+
+  utf8_to_utf16_in_ok_1 (cvt);
+  utf8_to_utf16_in_ok_2 (cvt);
+
+  utf8_to_utf16_in_partial_1 (cvt);
+  utf8_to_utf16_in_partial_2 (cvt);
 
   state = {};
   in_next = nullptr;
   out_next = nullptr;
-  auto res = cvt.in (state, in, in + 3, in_next, u16out, u16out + 1, out_next);
+  res = cvt.in (state, in, in + 4, in_next, out, out + 1, out_next);
   VERIFY (res == cvt.partial);
-  VERIFY (out_next == u16out);
+  VERIFY (out_next == out);
   VERIFY (in_next == in);
 
   state = {};
   in_next = nullptr;
   out_next = nullptr;
-  res = cvt.in (state, in, in + 3, in_next, u16out, u16out + 2, out_next);
+  res = cvt.in (state, in, in + 6, in_next, out, out + 1, out_next);
   VERIFY (res == cvt.partial);
-  VERIFY (out_next == u16out);
+  VERIFY (out_next == out);
   VERIFY (in_next == in);
 
   state = {};
   in_next = nullptr;
   out_next = nullptr;
-  res = cvt.in (state, in, in + 4, in_next, u16out, u16out + 1, out_next);
-  VERIFY (res == cvt.partial);
-  VERIFY (out_next == u16out);
-  VERIFY (in_next == in);
-
-  state = {};
-  in_next = nullptr;
-  out_next = nullptr;
-  res = cvt.in (state, in, in + 4, in_next, u16out, u16out + 2, out_next);
-  VERIFY (res == cvt.ok);
-  VERIFY (out_next == u16out + 2);
-  VERIFY (in_next == in + 4);
-  cout << hex << u16out[0] << ' ' << u16out[1] << '\n';
-  u16out[0] = u16out[1] = 0;
-
-  state = {};
-  in_next = nullptr;
-  out_next = nullptr;
-  res = cvt.in (state, in, in + 6, in_next, u16out, u16out + 1, out_next);
-  VERIFY (res == cvt.partial);
-  VERIFY (out_next == u16out);
-  VERIFY (in_next == in);
-
-  state = {};
-  in_next = nullptr;
-  out_next = nullptr;
-  res = cvt.in (state, in, in + 6, in_next, u16out, u16out + 2, out_next);
+  res = cvt.in (state, in, in + 6, in_next, out, out + 2, out_next);
   // actual output
   // VERIFY(res == cvt.ok); // WHY? bug? should be partial
   // VERIFY(out_ptr == u16out + 2);
   // VERIFY(in_ptr == u8in + 4);
   // expected output
   VERIFY (res == cvt.partial);
-  VERIFY (out_next == u16out + 2);
+  VERIFY (out_next == out + 2);
   VERIFY (in_next == in + 4);
 
   state = {};
   in_next = nullptr;
   out_next = nullptr;
-  res = cvt.in (state, in, in + 6, in_next, u16out, u16out + 3, out_next);
+  res = cvt.in (state, in, in + 6, in_next, out, out + 3, out_next);
   VERIFY (res == cvt.partial);
-  VERIFY (out_next == u16out + 2);
+  VERIFY (out_next == out + 2);
   VERIFY (in_next == in + 4);
 
   state = {};
   in_next = nullptr;
   out_next = nullptr;
-  res = cvt.in (state, in, in + 6, in_next, u16out, u16out + 4, out_next);
+  res = cvt.in (state, in, in + 6, in_next, out, out + 4, out_next);
   VERIFY (res == cvt.partial);
-  VERIFY (out_next == u16out + 2);
+  VERIFY (out_next == out + 2);
   VERIFY (in_next == in + 4);
 
   state = {};
   in_next = nullptr;
   out_next = nullptr;
-  res = cvt.in (state, in, in + 8, in_next, u16out, u16out + 2, out_next);
+  res = cvt.in (state, in, in + 8, in_next, out, out + 2, out_next);
   VERIFY (res == cvt.partial);
-  VERIFY (out_next == u16out + 2);
+  VERIFY (out_next == out + 2);
   VERIFY (in_next == in + 4);
 
   state = {};
   in_next = nullptr;
   out_next = nullptr;
-  res = cvt.in (state, in, in + 8, in_next, u16out, u16out + 3, out_next);
+  res = cvt.in (state, in, in + 8, in_next, out, out + 3, out_next);
   VERIFY (res == cvt.partial);
-  VERIFY (out_next == u16out + 2);
+  VERIFY (out_next == out + 2);
   VERIFY (in_next == in + 4);
-
-  state = {};
-  in_next = nullptr;
-  out_next = nullptr;
-  res = cvt.in (state, in, in + 8, in_next, u16out, u16out + 4, out_next);
-  VERIFY (res == cvt.ok);
-  VERIFY (out_next == u16out + 4);
-  VERIFY (in_next == in + 8);
 }
 
 void
