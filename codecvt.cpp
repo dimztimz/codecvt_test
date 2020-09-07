@@ -363,41 +363,52 @@ utf32_to_utf8_out_ok (const codecvt<char32_t, char, mbstate_t> &cvt)
 }
 
 void
-utf32_to_utf8_out_partial_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
+utf32_to_utf8_out_partial (const codecvt<char32_t, char, mbstate_t> &cvt)
 {
-  auto in = u32in;
-  char out[4] = {};
+  // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
+  const char32_t in[] = U"bш\uAAAA\U0010AAAA";
+  const char u8exp[] = "bш\uAAAA\U0010AAAA";
 
-  auto state = mbstate_t{};
-  auto in_next = (const char32_t *) nullptr;
-  auto out_next = (char *) nullptr;
-  auto res = codecvt_base::result ();
+  VERIFY (array_size (in) == 5);
+  VERIFY (char_traits<char32_t>::length (in) == 4);
+  VERIFY (array_size (u8exp) == 11);
+  VERIFY (char_traits<char>::length (u8exp) == 10);
 
-  res = cvt.out (state, in, in + 2, in_next, out, out + 4, out_next);
-  VERIFY (res == cvt.partial);
-  VERIFY (in_next == in + 1);
-  VERIFY (out_next == out + 4);
-  VERIFY (char_traits<char>::compare (out, u8in, 4) == 0);
-}
+  const test_offsets_partial offsets[] = {
+    {1, 0, 0, 0}, // no space for first CP
 
-void
-utf32_to_utf8_out_partial_2 (const codecvt<char32_t, char, mbstate_t> &cvt)
-{
-  auto in = u32in;
-  char out[6] = {};
-  char expected[6] = {};
-  char_traits<char>::copy (expected, u8in, 4);
+    {2, 1, 1, 1}, // no space for second CP
+    {2, 2, 1, 1}, // no space for second CP
 
-  auto state = mbstate_t{};
-  auto in_next = (const char32_t *) nullptr;
-  auto out_next = (char *) nullptr;
-  auto res = codecvt_base::result ();
+    {3, 3, 2, 3}, // no space for third CP
+    {3, 4, 2, 3}, // no space for third CP
+    {3, 5, 2, 3}, // no space for third CP
 
-  res = cvt.out (state, in, in + 2, in_next, out, out + 6, out_next);
-  VERIFY (res == cvt.partial);
-  VERIFY (in_next == in + 1);
-  VERIFY (out_next == out + 4);
-  VERIFY (char_traits<char>::compare (out, expected, 6) == 0);
+    {4, 6, 3, 6}, // no space for fourth CP
+    {4, 7, 3, 6}, // no space for fourth CP
+    {4, 8, 3, 6}, // no space for fourth CP
+    {4, 9, 3, 6}, // no space for fourth CP
+  };
+  for (auto t : offsets)
+    {
+      char out[10] = {};
+      VERIFY (t.out_size <= array_size (out));
+      VERIFY (t.expected_out_next <= t.out_size);
+      auto state = mbstate_t{};
+      auto in_next = (const char32_t *) nullptr;
+      auto out_next = (char *) nullptr;
+      auto res = codecvt_base::result ();
+
+      res = cvt.out (state, in, in + t.in_size, in_next, out, out + t.out_size,
+		     out_next);
+      VERIFY (res == cvt.partial);
+      VERIFY (in_next == in + t.expected_in_next);
+      VERIFY (out_next == out + t.expected_out_next);
+      VERIFY (char_traits<char>::compare (out, u8exp, t.expected_out_next)
+	      == 0);
+      if (t.expected_out_next < array_size (out))
+	VERIFY (out[t.expected_out_next] == 0);
+    }
 }
 
 void
@@ -423,8 +434,7 @@ void
 utf32_to_utf8_out (const codecvt<char32_t, char, mbstate_t> &cvt)
 {
   utf32_to_utf8_out_ok (cvt);
-  utf32_to_utf8_out_partial_1 (cvt);
-  utf32_to_utf8_out_partial_2 (cvt);
+  utf32_to_utf8_out_partial (cvt);
   utf32_to_utf8_out_error_1 (cvt);
 }
 
