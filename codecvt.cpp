@@ -46,17 +46,22 @@ struct test_offsets_partial
   size_t in_size, out_size, expected_in_next, expected_out_next;
 };
 
-template <class T, size_t N> auto array_size (T (&)[N]) -> size_t { return N; }
+template <class T, size_t N>
+auto
+array_size (const T (&)[N]) -> size_t
+{
+  return N;
+}
 
 void
 utf8_to_utf32_in_ok (const codecvt<char32_t, char, mbstate_t> &cvt)
 {
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
   const char in[] = "bш\uAAAA\U0010AAAA";
+  const char32_t u32exp[] = U"bш\uAAAA\U0010AAAA";
+
   VERIFY (array_size (in) == 11);
   VERIFY (char_traits<char>::length (in) == 10);
-
-  const char32_t u32exp[] = U"bш\uAAAA\U0010AAAA";
   VERIFY (array_size (u32exp) == 5);
   VERIFY (char_traits<char32_t>::length (u32exp) == 4);
 
@@ -103,13 +108,40 @@ utf8_to_utf32_in_ok (const codecvt<char32_t, char, mbstate_t> &cvt)
 void
 utf8_to_utf32_in_partial (const codecvt<char32_t, char, mbstate_t> &cvt)
 {
-  auto in = u8in;
+  // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
+  const char in[] = "bш\uAAAA\U0010AAAA";
+  const char32_t u32exp[] = U"bш\uAAAA\U0010AAAA";
 
-  test_offsets_partial offsets[] = {{6, 1, 4, 1}, {6, 2, 4, 1}, {8, 1, 4, 1}};
+  VERIFY (array_size (in) == 11);
+  VERIFY (char_traits<char>::length (in) == 10);
+  VERIFY (array_size (u32exp) == 5);
+  VERIFY (char_traits<char32_t>::length (u32exp) == 4);
+
+  test_offsets_partial offsets[] = {
+    {1, 0, 0, 0}, // no space for first CP
+
+    {3, 1, 1, 1}, // no space for second CP
+    {2, 2, 1, 1}, // incomplete second CP
+    {2, 1, 1, 1}, // incomplete second CP, and no space for it
+
+    {6, 2, 3, 2}, // no space for third CP
+    {4, 3, 3, 2}, // incomplete third CP
+    {5, 3, 3, 2}, // incomplete third CP
+    {4, 2, 3, 2}, // incomplete third CP, and no space for it
+    {5, 2, 3, 2}, // incomplete third CP, and no space for it
+
+    {10, 3, 6, 3}, // no space for fourth CP
+    {7, 4, 6, 3},  // incomplete fourth CP
+    {8, 4, 6, 3},  // incomplete fourth CP
+    {9, 4, 6, 3},  // incomplete fourth CP
+    {7, 3, 6, 3},  // incomplete fourth CP, and no space for it
+    {8, 3, 6, 3},  // incomplete fourth CP, and no space for it
+    {9, 3, 6, 3},  // incomplete fourth CP, and no space for it
+  };
 
   for (auto t : offsets)
     {
-      char32_t out[2] = {};
+      char32_t out[4] = {};
       VERIFY (t.out_size <= array_size (out));
       auto state = mbstate_t{};
       auto in_next = (const char *) nullptr;
@@ -121,7 +153,7 @@ utf8_to_utf32_in_partial (const codecvt<char32_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.partial);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char32_t>::compare (out, u32in, t.expected_out_next)
+      VERIFY (char_traits<char32_t>::compare (out, u32exp, t.expected_out_next)
 	      == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
