@@ -37,136 +37,95 @@ to_unique_ptr (T *ptr)
   return std::unique_ptr<T> (ptr);
 }
 
-// 4 byte (1cp) input buf, 1 U32 cp output buf
-void
-utf8_to_utf32_in_ok_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
+struct test_offsets_ok
 {
-  auto in = u8in;
-  char32_t out[1] = {};
+  size_t in_size, out_size;
+};
+struct test_offsets_partial
+{
+  size_t in_size, out_size, expected_in_next, expected_out_next;
+};
 
-  auto state = mbstate_t{};
-  auto in_next = (const char *) nullptr;
-  auto out_next = (char32_t *) nullptr;
-  auto res = codecvt_base::result ();
+template <class T, size_t N> auto array_size (T (&)[N]) -> size_t { return N; }
 
-  res = cvt.in (state, in, in + 4, in_next, out, out + 1, out_next);
-  VERIFY (res == cvt.ok);
-  VERIFY (in_next == in + 4);
-  VERIFY (out_next == out + 1);
-  VERIFY (out[0] == u32in[0]);
+void
+utf8_to_utf32_in_ok (const codecvt<char32_t, char, mbstate_t> &cvt)
+{
+  // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
+  const char in[] = "bш\uAAAA\U0010AAAA";
+  VERIFY (array_size (in) == 11);
+  VERIFY (char_traits<char>::length (in) == 10);
+
+  const char32_t u32exp[] = U"bш\uAAAA\U0010AAAA";
+  VERIFY (array_size (u32exp) == 5);
+  VERIFY (char_traits<char32_t>::length (u32exp) == 4);
+
+  test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {3, 2}, {6, 3}, {10, 4}};
+  for (auto t : offsets)
+    {
+      char32_t out[4] = {};
+      VERIFY (t.out_size <= array_size (out));
+      auto state = mbstate_t{};
+      auto in_next = (const char *) nullptr;
+      auto out_next = (char32_t *) nullptr;
+      auto res = codecvt_base::result ();
+
+      res = cvt.in (state, in, in + t.in_size, in_next, out, out + t.out_size,
+		    out_next);
+      VERIFY (res == cvt.ok);
+      VERIFY (in_next == in + t.in_size);
+      VERIFY (out_next == out + t.out_size);
+      VERIFY (char_traits<char32_t>::compare (out, u32exp, t.out_size) == 0);
+      if (t.out_size < array_size (out))
+	VERIFY (out[t.out_size] == 0);
+    }
+
+  for (auto t : offsets)
+    {
+      char32_t out[5] = {};
+      VERIFY (t.out_size <= array_size (out));
+      auto state = mbstate_t{};
+      auto in_next = (const char *) nullptr;
+      auto out_next = (char32_t *) nullptr;
+      auto res = codecvt_base::result ();
+
+      res
+	= cvt.in (state, in, in + t.in_size, in_next, out, end (out), out_next);
+      VERIFY (res == cvt.ok);
+      VERIFY (in_next == in + t.in_size);
+      VERIFY (out_next == out + t.out_size);
+      VERIFY (char_traits<char32_t>::compare (out, u32exp, t.out_size) == 0);
+      if (t.out_size < array_size (out))
+	VERIFY (out[t.out_size] == 0);
+    }
 }
 
-// 8 byte (2cp) input buf, 2 U32 cp output buf
 void
-utf8_to_utf32_in_ok_2 (const codecvt<char32_t, char, mbstate_t> &cvt)
+utf8_to_utf32_in_partial (const codecvt<char32_t, char, mbstate_t> &cvt)
 {
   auto in = u8in;
-  char32_t out[2] = {};
 
-  auto state = mbstate_t{};
-  auto in_next = (const char *) nullptr;
-  auto out_next = (char32_t *) nullptr;
-  auto res = codecvt_base::result ();
+  test_offsets_partial offsets[] = {{6, 1, 4, 1}, {6, 2, 4, 1}, {8, 1, 4, 1}};
 
-  res = cvt.in (state, in, in + 8, in_next, out, out + 2, out_next);
-  VERIFY (res == cvt.ok);
-  VERIFY (in_next == in + 8);
-  VERIFY (out_next == out + 2);
-  VERIFY (out[0] == u32in[0] && out[1] == u32in[1]);
-}
+  for (auto t : offsets)
+    {
+      char32_t out[2] = {};
+      VERIFY (t.out_size <= array_size (out));
+      auto state = mbstate_t{};
+      auto in_next = (const char *) nullptr;
+      auto out_next = (char32_t *) nullptr;
+      auto res = codecvt_base::result ();
 
-// 0 byte (0cp) input buf, 0 U32 cp output buf
-void
-utf8_to_utf32_in_ok_3 (const codecvt<char32_t, char, mbstate_t> &cvt)
-{
-  auto in = u8in;
-  char32_t *out = nullptr;
-
-  auto state = mbstate_t{};
-  auto in_next = (const char *) nullptr;
-  auto out_next = (char32_t *) nullptr;
-  auto res = codecvt_base::result ();
-
-  res = cvt.in (state, in, in + 0, in_next, out, out + 0, out_next);
-  VERIFY (res == cvt.ok);
-  VERIFY (in_next == in + 0);
-  VERIFY (out_next == out + 0);
-}
-
-// 0 byte (0cp) input buf, 1 U32 cp output buf
-void
-utf8_to_utf32_in_ok_4 (const codecvt<char32_t, char, mbstate_t> &cvt)
-{
-  auto in = u8in;
-  char32_t out[1] = {};
-
-  auto state = mbstate_t{};
-  auto in_next = (const char *) nullptr;
-  auto out_next = (char32_t *) nullptr;
-  auto res = codecvt_base::result ();
-
-  res = cvt.in (state, in, in + 0, in_next, out, out + 1, out_next);
-  VERIFY (res == cvt.ok);
-  VERIFY (in_next == in + 0);
-  VERIFY (out_next == out + 0);
-  VERIFY (out[0] == 0);
-}
-
-// 6 byte (1cp + 1 incomplete cp) input buf, 1 U32 cp output buf
-void
-utf8_to_utf32_in_partial_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
-{
-  auto in = u8in;
-  char32_t out[1] = {};
-
-  auto state = mbstate_t{};
-  auto in_next = (const char *) nullptr;
-  auto out_next = (char32_t *) nullptr;
-  auto res = codecvt_base::result ();
-
-  res = cvt.in (state, in, in + 6, in_next, out, out + 1, out_next);
-  VERIFY (res == cvt.partial);
-  VERIFY (in_next == in + 4);
-  VERIFY (out_next == out + 1);
-  VERIFY (out[0] == u32in[0]);
-}
-
-// 6 byte (1cp + 1 incomplete cp) input buf, 2 U32 cp output buf
-void
-utf8_to_utf32_in_partial_2 (const codecvt<char32_t, char, mbstate_t> &cvt)
-{
-  auto in = u8in;
-  char32_t out[2] = {};
-
-  auto state = mbstate_t{};
-  auto in_next = (const char *) nullptr;
-  auto out_next = (char32_t *) nullptr;
-  auto res = codecvt_base::result ();
-
-  res = cvt.in (state, in, in + 6, in_next, out, out + 2, out_next);
-  VERIFY (res == cvt.partial);
-  VERIFY (in_next == in + 4);
-  VERIFY (out_next == out + 1);
-  VERIFY (out[0] == u32in[0] && out[1] == 0);
-}
-
-// 8 byte (2cp) input buf, 1 U32 cp output buf
-void
-utf8_to_utf32_in_partial_3 (const codecvt<char32_t, char, mbstate_t> &cvt)
-{
-  auto in = u8in;
-  char32_t out[1] = {};
-
-  auto state = mbstate_t{};
-  auto in_next = (const char *) nullptr;
-  auto out_next = (char32_t *) nullptr;
-  auto res = codecvt_base::result ();
-
-  res = cvt.in (state, in, in + 8, in_next, out, out + 1, out_next);
-  VERIFY (res == cvt.partial);
-  VERIFY (in_next == in + 4);
-  VERIFY (out_next == out + 1);
-  VERIFY (out[0] == u32in[0]);
+      res = cvt.in (state, in, in + t.in_size, in_next, out, out + t.out_size,
+		    out_next);
+      VERIFY (res == cvt.partial);
+      VERIFY (in_next == in + t.expected_in_next);
+      VERIFY (out_next == out + t.expected_out_next);
+      VERIFY (char_traits<char32_t>::compare (out, u32in, t.expected_out_next)
+	      == 0);
+      if (t.expected_out_next < array_size (out))
+	VERIFY (out[t.expected_out_next] == 0);
+    }
 }
 
 void
@@ -314,13 +273,8 @@ utf8_to_utf32_in_error_7 (const codecvt<char32_t, char, mbstate_t> &cvt)
 void
 utf8_to_utf32_in (const codecvt<char32_t, char, mbstate_t> &cvt)
 {
-  utf8_to_utf32_in_ok_1 (cvt);
-  utf8_to_utf32_in_ok_2 (cvt);
-  utf8_to_utf32_in_ok_3 (cvt);
-  utf8_to_utf32_in_ok_4 (cvt);
-  utf8_to_utf32_in_partial_1 (cvt);
-  utf8_to_utf32_in_partial_2 (cvt);
-  utf8_to_utf32_in_partial_3 (cvt);
+  utf8_to_utf32_in_ok (cvt);
+  utf8_to_utf32_in_partial (cvt);
   utf8_to_utf32_in_error_1 (cvt);
   utf8_to_utf32_in_error_2 (cvt);
   utf8_to_utf32_in_error_3 (cvt);
