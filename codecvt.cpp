@@ -24,12 +24,6 @@ bool global_error = false;
 
 using namespace std;
 
-// 2 code points, both are 4 byte in UTF-8.
-// in UTF-16 both are 2 unit i.e. surrogate pairs
-const char u8in[] = u8"\U0010FFFF\U0010AAAA";
-const char16_t u16in[] = u"\U0010FFFF\U0010AAAA";
-const char32_t u32in[] = U"\U0010FFFF\U0010AAAA";
-
 template <typename T>
 std::unique_ptr<T>
 to_unique_ptr (T *ptr)
@@ -46,9 +40,15 @@ struct test_offsets_partial
   size_t in_size, out_size, expected_in_next, expected_out_next;
 };
 
+template <class CharT> struct test_offsets_error
+{
+  size_t in_size, out_size, expected_in_next, expected_out_next;
+  CharT replace_char;
+  size_t replace_pos;
+};
+
 template <class T, size_t N>
-auto
-array_size (const T (&)[N]) -> size_t
+auto constexpr array_size (const T (&)[N]) -> size_t
 {
   return N;
 }
@@ -60,9 +60,9 @@ utf8_to_utf32_in_ok (const codecvt<char32_t, char, mbstate_t> &cvt)
   const char in[] = "bш\uAAAA\U0010AAAA";
   const char32_t u32exp[] = U"bш\uAAAA\U0010AAAA";
 
-  VERIFY (array_size (in) == 11);
+  static_assert ((array_size (in) == 11), "");
+  static_assert (array_size (u32exp) == 5, "");
   VERIFY (char_traits<char>::length (in) == 10);
-  VERIFY (array_size (u32exp) == 5);
   VERIFY (char_traits<char32_t>::length (u32exp) == 4);
 
   test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {3, 2}, {6, 3}, {10, 4}};
@@ -112,9 +112,9 @@ utf8_to_utf32_in_partial (const codecvt<char32_t, char, mbstate_t> &cvt)
   const char in[] = "bш\uAAAA\U0010AAAA";
   const char32_t u32exp[] = U"bш\uAAAA\U0010AAAA";
 
-  VERIFY (array_size (in) == 11);
+  static_assert (array_size (in) == 11, "");
+  static_assert (array_size (u32exp) == 5, "");
   VERIFY (char_traits<char>::length (in) == 10);
-  VERIFY (array_size (u32exp) == 5);
   VERIFY (char_traits<char32_t>::length (u32exp) == 4);
 
   test_offsets_partial offsets[] = {
@@ -163,145 +163,51 @@ utf8_to_utf32_in_partial (const codecvt<char32_t, char, mbstate_t> &cvt)
 }
 
 void
-utf8_to_utf32_in_error_1 (const codecvt<char32_t, char, mbstate_t> &cvt)
+utf8_to_utf32_in_error (const codecvt<char32_t, char, mbstate_t> &cvt)
 {
-  char in[8] = {};
-  char32_t out[2] = {};
-  char_traits<char>::copy (in, u8in, 8);
-  in[3] = 'z';
+  const char valid_in[] = "\U0010FFFF\U0010AAAA";
+  const char32_t u32exp[] = U"\U0010FFFF\U0010AAAA";
 
-  auto state = mbstate_t{};
-  auto in_next = (const char *) nullptr;
-  auto out_next = (char32_t *) nullptr;
-  auto res = codecvt_base::result ();
+  static_assert (array_size (valid_in) == 9, "");
+  static_assert (array_size (u32exp) == 3, "");
+  VERIFY (char_traits<char>::length (valid_in) == 8);
+  VERIFY (char_traits<char32_t>::length (u32exp) == 2);
 
-  res = cvt.in (state, in, in + 8, in_next, out, out + 2, out_next);
-  VERIFY (res == cvt.error);
-  VERIFY (in_next == in + 0);
-  VERIFY (out_next == out + 0);
-  VERIFY (out[0] == 0 && out[1] == 0);
-}
+  test_offsets_error<char> offsets[] = {
+    {8, 2, 0, 0, 'z', 3},    // replace trailing byte with valid 1-byte CP
+    {8, 2, 0, 0, '\xFF', 3}, // replace trailing byte with invalid byte
 
-void
-utf8_to_utf32_in_error_2 (const codecvt<char32_t, char, mbstate_t> &cvt)
-{
-  char in[8] = {};
-  char32_t out[2] = {};
-  char_traits<char>::copy (in, u8in, 8);
-  in[3] = '\xFF';
+    {8, 2, 4, 1, '\xFF', 4}, // replace leading byte with invalid byte
+    {8, 2, 4, 1, 'z', 7},    // replace last trailing byte with valid 1-byte CP
+    {8, 2, 4, 1, '\xFF', 7}, // replace last trailing byte with invalid byte
+    {7, 2, 4, 1, 'z', 5}     // replace trailing byte with invalid byte,
+			     // also incomplete at end
+  };
+  for (auto t : offsets)
+    {
+      char in[8] = {};
+      char32_t out[2] = {};
+      VERIFY (t.out_size <= array_size (out));
+      VERIFY (t.expected_in_next <= t.in_size);
+      VERIFY (t.expected_out_next <= t.out_size);
+      char_traits<char>::copy (in, valid_in, t.in_size);
+      in[t.replace_pos] = t.replace_char;
 
-  auto state = mbstate_t{};
-  auto in_next = (const char *) nullptr;
-  auto out_next = (char32_t *) nullptr;
-  auto res = codecvt_base::result ();
+      auto state = mbstate_t{};
+      auto in_next = (const char *) nullptr;
+      auto out_next = (char32_t *) nullptr;
+      auto res = codecvt_base::result ();
 
-  res = cvt.in (state, in, in + 8, in_next, out, out + 2, out_next);
-  VERIFY (res == cvt.error);
-  VERIFY (in_next == in + 0);
-  VERIFY (out_next == out + 0);
-  VERIFY (out[0] == 0 && out[1] == 0);
-}
-
-void
-utf8_to_utf32_in_error_3 (const codecvt<char32_t, char, mbstate_t> &cvt)
-{
-  char in[8] = {};
-  char32_t out[3] = {};
-  char_traits<char>::copy (in, u8in, 8);
-  in[4] = 'z';
-
-  auto state = mbstate_t{};
-  auto in_next = (const char *) nullptr;
-  auto out_next = (char32_t *) nullptr;
-  auto res = codecvt_base::result ();
-
-  res = cvt.in (state, in, in + 8, in_next, out, out + 3, out_next);
-  VERIFY (res == cvt.error);
-  VERIFY (in_next == in + 5);
-  VERIFY (out_next == out + 2);
-  VERIFY (out[0] == u32in[0] && out[1] == 'z' && out[2] == 0);
-}
-
-void
-utf8_to_utf32_in_error_4 (const codecvt<char32_t, char, mbstate_t> &cvt)
-{
-  char in[8] = {};
-  char32_t out[3] = {};
-  char_traits<char>::copy (in, u8in, 8);
-  in[4] = '\xFF';
-
-  auto state = mbstate_t{};
-  auto in_next = (const char *) nullptr;
-  auto out_next = (char32_t *) nullptr;
-  auto res = codecvt_base::result ();
-
-  res = cvt.in (state, in, in + 8, in_next, out, out + 3, out_next);
-  VERIFY (res == cvt.error);
-  VERIFY (in_next == in + 4);
-  VERIFY (out_next == out + 1);
-  VERIFY (out[0] == u32in[0] && out[1] == 0 && out[2] == 0);
-}
-
-void
-utf8_to_utf32_in_error_5 (const codecvt<char32_t, char, mbstate_t> &cvt)
-{
-  char in[8] = {};
-  char32_t out[3] = {};
-  char_traits<char>::copy (in, u8in, 8);
-  in[7] = 'z';
-
-  auto state = mbstate_t{};
-  auto in_next = (const char *) nullptr;
-  auto out_next = (char32_t *) nullptr;
-  auto res = codecvt_base::result ();
-
-  res = cvt.in (state, in, in + 8, in_next, out, out + 3, out_next);
-  VERIFY (res == cvt.error);
-  VERIFY (in_next == in + 4);
-  VERIFY (out_next == out + 1);
-  VERIFY (out[0] == u32in[0] && out[1] == 0 && out[2] == 0);
-}
-
-void
-utf8_to_utf32_in_error_6 (const codecvt<char32_t, char, mbstate_t> &cvt)
-{
-  char in[8] = {};
-  char32_t out[3] = {};
-  char_traits<char>::copy (in, u8in, 8);
-  in[7] = '\xFF';
-
-  auto state = mbstate_t{};
-  auto in_next = (const char *) nullptr;
-  auto out_next = (char32_t *) nullptr;
-  auto res = codecvt_base::result ();
-
-  res = cvt.in (state, in, in + 8, in_next, out, out + 3, out_next);
-  VERIFY (res == cvt.error);
-  VERIFY (in_next == in + 4);
-  VERIFY (out_next == out + 1);
-  VERIFY (out[0] == u32in[0] && out[1] == 0 && out[2] == 0);
-}
-
-void
-utf8_to_utf32_in_error_7 (const codecvt<char32_t, char, mbstate_t> &cvt)
-{
-  char in[7] = {};
-  char32_t out[3] = {};
-  char_traits<char>::copy (in, u8in, 7);
-  in[5] = 'z';
-  // last CP has two errors. its second code unit is malformed and it misses its
-  // last.
-
-  auto state = mbstate_t{};
-  auto in_next = (const char *) nullptr;
-  auto out_next = (char32_t *) nullptr;
-  auto res = codecvt_base::result ();
-
-  res = cvt.in (state, in, in + 7, in_next, out, out + 3, out_next);
-  VERIFY (res == cvt.error);
-  VERIFY (in_next == in + 4);
-  VERIFY (out_next == out + 1);
-  VERIFY (out[0] == u32in[0] && out[1] == 0 && out[2] == 0);
+      res = cvt.in (state, in, in + t.in_size, in_next, out, out + t.out_size,
+		    out_next);
+      VERIFY (res == cvt.error);
+      VERIFY (in_next == in + t.expected_in_next);
+      VERIFY (out_next == out + t.expected_out_next);
+      VERIFY (char_traits<char32_t>::compare (out, u32exp, t.expected_out_next)
+	      == 0);
+      if (t.expected_out_next < array_size (out))
+	VERIFY (out[t.expected_out_next] == 0);
+    }
 }
 
 void
@@ -309,13 +215,7 @@ utf8_to_utf32_in (const codecvt<char32_t, char, mbstate_t> &cvt)
 {
   utf8_to_utf32_in_ok (cvt);
   utf8_to_utf32_in_partial (cvt);
-  utf8_to_utf32_in_error_1 (cvt);
-  utf8_to_utf32_in_error_2 (cvt);
-  utf8_to_utf32_in_error_3 (cvt);
-  utf8_to_utf32_in_error_4 (cvt);
-  utf8_to_utf32_in_error_5 (cvt);
-  utf8_to_utf32_in_error_6 (cvt);
-  utf8_to_utf32_in_error_7 (cvt);
+  utf8_to_utf32_in_error (cvt);
 }
 
 void
@@ -336,9 +236,9 @@ utf32_to_utf8_out_ok (const codecvt<char32_t, char, mbstate_t> &cvt)
   const char32_t in[] = U"bш\uAAAA\U0010AAAA";
   const char u8exp[] = "bш\uAAAA\U0010AAAA";
 
-  VERIFY (array_size (in) == 5);
+  static_assert (array_size (in) == 5, "");
+  static_assert (array_size (u8exp) == 11, "");
   VERIFY (char_traits<char32_t>::length (in) == 4);
-  VERIFY (array_size (u8exp) == 11);
   VERIFY (char_traits<char>::length (u8exp) == 10);
 
   const test_offsets_ok offsets[] = {{1, 1}, {2, 3}, {3, 6}, {4, 10}};
@@ -369,9 +269,9 @@ utf32_to_utf8_out_partial (const codecvt<char32_t, char, mbstate_t> &cvt)
   const char32_t in[] = U"bш\uAAAA\U0010AAAA";
   const char u8exp[] = "bш\uAAAA\U0010AAAA";
 
-  VERIFY (array_size (in) == 5);
+  static_assert (array_size (in) == 5, "");
+  static_assert (array_size (u8exp) == 11, "");
   VERIFY (char_traits<char32_t>::length (in) == 4);
-  VERIFY (array_size (u8exp) == 11);
   VERIFY (char_traits<char>::length (u8exp) == 10);
 
   const test_offsets_partial offsets[] = {
@@ -448,6 +348,11 @@ utf32_to_utf8_out ()
   auto cvt_ptr = to_unique_ptr (new codecvt_utf8<char32_t> ());
   utf32_to_utf8_out (*cvt_ptr);
 }
+
+// 2 code points, both are 4 byte in UTF-8.
+// in UTF-16 both are 2 unit i.e. surrogate pairs
+const char u8in[] = u8"\U0010FFFF\U0010AAAA";
+const char16_t u16in[] = u"\U0010FFFF\U0010AAAA";
 
 void
 utf8_to_utf16_in_ok_1 (const codecvt<char16_t, char, mbstate_t> &cvt)
