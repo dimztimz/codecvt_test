@@ -241,7 +241,7 @@ utf32_to_utf8_out_ok (const codecvt<char32_t, char, mbstate_t> &cvt)
   VERIFY (char_traits<char32_t>::length (in) == 4);
   VERIFY (char_traits<char>::length (u8exp) == 10);
 
-  const test_offsets_ok offsets[] = {{1, 1}, {2, 3}, {3, 6}, {4, 10}};
+  const test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}, {4, 10}};
   for (auto t : offsets)
     {
       char out[10] = {};
@@ -463,11 +463,6 @@ utf8_to_utf16_in_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
     }
 }
 
-// 2 code points, both are 4 byte in UTF-8.
-// in UTF-16 both are 2 unit i.e. surrogate pairs
-const char u8in[] = u8"\U0010FFFF\U0010AAAA";
-const char16_t u16in[] = u"\U0010FFFF\U0010AAAA";
-
 void
 utf8_to_utf16_in (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
@@ -498,7 +493,7 @@ utf16_to_utf8_out_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
   VERIFY (char_traits<char16_t>::length (in) == 5);
   VERIFY (char_traits<char>::length (u8exp) == 10);
 
-  const test_offsets_ok offsets[] = {{1, 1}, {2, 3}, {3, 6}, {5, 10}};
+  const test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}, {5, 10}};
   for (auto t : offsets)
     {
       char out[10] = {};
