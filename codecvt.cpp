@@ -486,104 +486,101 @@ utf8_to_utf16_in ()
   utf8_to_utf16_in (*cvt_ptr);
 }
 
+void
+utf16_to_utf8_out_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
+{
+  // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
+  const char16_t in[] = u"bш\uAAAA\U0010AAAA";
+  const char u8exp[] = "bш\uAAAA\U0010AAAA";
+
+  static_assert (array_size (in) == 6, "");
+  static_assert (array_size (u8exp) == 11, "");
+  VERIFY (char_traits<char16_t>::length (in) == 5);
+  VERIFY (char_traits<char>::length (u8exp) == 10);
+
+  const test_offsets_ok offsets[] = {{1, 1}, {2, 3}, {3, 6}, {5, 10}};
+  for (auto t : offsets)
+    {
+      char out[10] = {};
+      VERIFY (t.out_size <= array_size (out));
+      auto state = mbstate_t{};
+      auto in_next = (const char16_t *) nullptr;
+      auto out_next = (char *) nullptr;
+      auto res = codecvt_base::result ();
+
+      res = cvt.out (state, in, in + t.in_size, in_next, out, out + t.out_size,
+		     out_next);
+      VERIFY (res == cvt.ok);
+      VERIFY (in_next == in + t.in_size);
+      VERIFY (out_next == out + t.out_size);
+      VERIFY (char_traits<char>::compare (out, u8exp, t.out_size) == 0);
+      if (t.out_size < array_size (out))
+	VERIFY (out[t.out_size] == 0);
+    }
+}
+
+void
+utf16_to_utf8_out_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
+{
+  // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
+  const char16_t in[] = u"bш\uAAAA\U0010AAAA";
+  const char u8exp[] = "bш\uAAAA\U0010AAAA";
+
+  static_assert (array_size (in) == 6, "");
+  static_assert (array_size (u8exp) == 11, "");
+  VERIFY (char_traits<char16_t>::length (in) == 5);
+  VERIFY (char_traits<char>::length (u8exp) == 10);
+
+  const test_offsets_partial offsets[] = {
+    {1, 0, 0, 0}, // no space for first CP
+
+    {2, 1, 1, 1}, // no space for second CP
+    {2, 2, 1, 1}, // no space for second CP
+
+    {3, 3, 2, 3}, // no space for third CP
+    {3, 4, 2, 3}, // no space for third CP
+    {3, 5, 2, 3}, // no space for third CP
+
+    {5, 6, 3, 6}, // no space for fourth CP
+    {5, 7, 3, 6}, // no space for fourth CP
+    {5, 8, 3, 6}, // no space for fourth CP
+    {5, 9, 3, 6}, // no space for fourth CP
+
+    {4, 10, 3, 6}, // incomplete fourth CP
+
+    {4, 6, 3, 6}, // incomplete fourth CP, and no space for it
+    {4, 7, 3, 6}, // incomplete fourth CP, and no space for it
+    {4, 8, 3, 6}, // incomplete fourth CP, and no space for it
+    {4, 9, 3, 6}, // incomplete fourth CP, and no space for it
+  };
+  for (auto t : offsets)
+    {
+      char out[10] = {};
+      VERIFY (t.out_size <= array_size (out));
+      VERIFY (t.expected_out_next <= t.out_size);
+      auto state = mbstate_t{};
+      auto in_next = (const char16_t *) nullptr;
+      auto out_next = (char *) nullptr;
+      auto res = codecvt_base::result ();
+
+      res = cvt.out (state, in, in + t.in_size, in_next, out, out + t.out_size,
+		     out_next);
+      VERIFY (res == cvt.partial);
+      VERIFY (in_next == in + t.expected_in_next);
+      VERIFY (out_next == out + t.expected_out_next);
+      VERIFY (char_traits<char>::compare (out, u8exp, t.expected_out_next)
+	      == 0);
+      if (t.expected_out_next < array_size (out))
+	VERIFY (out[t.expected_out_next] == 0);
+    }
+}
+
 // tests .out() function of codecvt<char16_t, char, mbstate>
 void
 utf16_to_utf8_out (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
-  auto in = u16in;
-  char out[8];
-
-  auto state = mbstate_t{};
-  auto in_next = in;
-  auto out_next = out;
-
-  state = {};
-  in_next = nullptr;
-  out_next = nullptr;
-  auto res = cvt.out (state, in, in + 1, in_next, out, out + 3, out_next);
-  VERIFY (res == cvt.partial);
-  VERIFY (in_next == in);
-  VERIFY (out_next == out);
-
-  state = {};
-  in_next = nullptr;
-  out_next = nullptr;
-  res = cvt.out (state, in, in + 1, in_next, out, out + 4, out_next);
-  VERIFY (res == cvt.partial);
-  VERIFY (in_next == in);
-  VERIFY (out_next == out);
-
-  state = {};
-  in_next = nullptr;
-  out_next = nullptr;
-  res = cvt.out (state, in, in + 2, in_next, out, out + 3, out_next);
-  VERIFY (res == cvt.partial);
-  VERIFY (in_next == in);
-  VERIFY (out_next == out);
-
-  state = {};
-  in_next = nullptr;
-  out_next = nullptr;
-  res = cvt.out (state, in, in + 2, in_next, out, out + 4, out_next);
-  VERIFY (res == cvt.ok);
-  VERIFY (in_next == in + 2);
-  VERIFY (out_next == out + 4);
-
-  state = {};
-  in_next = nullptr;
-  out_next = nullptr;
-  res = cvt.out (state, in, in + 3, in_next, out, out + 3, out_next);
-  VERIFY (res == cvt.partial);
-  VERIFY (in_next == in);
-  VERIFY (out_next == out);
-
-  state = {};
-  in_next = nullptr;
-  out_next = nullptr;
-  res = cvt.out (state, in, in + 3, in_next, out, out + 4, out_next);
-  VERIFY (res == cvt.partial);
-  VERIFY (in_next == in + 2);
-  VERIFY (out_next == out + 4);
-
-  state = {};
-  in_next = nullptr;
-  out_next = nullptr;
-  res = cvt.out (state, in, in + 3, in_next, out, out + 8, out_next);
-  VERIFY (res == cvt.partial);
-  VERIFY (in_next == in + 2);
-  VERIFY (out_next == out + 4);
-
-  state = {};
-  in_next = nullptr;
-  out_next = nullptr;
-  res = cvt.out (state, in, in + 4, in_next, out, out + 3, out_next);
-  VERIFY (res == cvt.partial);
-  VERIFY (in_next == in);
-  VERIFY (out_next == out);
-
-  state = {};
-  in_next = nullptr;
-  out_next = nullptr;
-  res = cvt.out (state, in, in + 4, in_next, out, out + 4, out_next);
-  VERIFY (res == cvt.partial);
-  VERIFY (in_next == in + 2);
-  VERIFY (out_next == out + 4);
-
-  state = {};
-  in_next = nullptr;
-  out_next = nullptr;
-  res = cvt.out (state, in, in + 4, in_next, out, out + 6, out_next);
-  VERIFY (res == cvt.partial);
-  VERIFY (in_next == in + 2);
-  VERIFY (out_next == out + 4);
-
-  state = {};
-  in_next = nullptr;
-  out_next = nullptr;
-  res = cvt.out (state, in, in + 4, in_next, out, out + 8, out_next);
-  VERIFY (res == cvt.ok);
-  VERIFY (in_next == in + 4);
-  VERIFY (out_next == out + 8);
+  utf16_to_utf8_out_ok (cvt);
+  utf16_to_utf8_out_partial (cvt);
 }
 
 void
