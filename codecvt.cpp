@@ -729,7 +729,7 @@ utf16_to_utf8_out_error (const codecvt<char16_t, char, mbstate_t> &cvt)
   VERIFY (char_traits<char16_t>::length (valid_in) == 5);
   VERIFY (char_traits<char>::length (u8exp) == 10);
 
-  test_offsets_error<char32_t> offsets[] = {
+  test_offsets_error<char16_t> offsets[] = {
     {5, 10, 0, 0, 0xD800, 0},
     {5, 10, 0, 0, 0xDBFF, 0},
     {5, 10, 0, 0, 0xDC00, 0},
