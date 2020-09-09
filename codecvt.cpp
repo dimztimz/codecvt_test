@@ -718,6 +718,78 @@ utf16_to_utf8_out_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
 	VERIFY (out[t.expected_out_next] == 0);
     }
 }
+void
+utf16_to_utf8_out_error (const codecvt<char16_t, char, mbstate_t> &cvt)
+{
+  const char16_t valid_in[] = u"bш\uAAAA\U0010AAAA";
+  const char u8exp[] = "bш\uAAAA\U0010AAAA";
+
+  static_assert (array_size (valid_in) == 6, "");
+  static_assert (array_size (u8exp) == 11, "");
+  VERIFY (char_traits<char16_t>::length (valid_in) == 5);
+  VERIFY (char_traits<char>::length (u8exp) == 10);
+
+  test_offsets_error<char32_t> offsets[] = {
+    {5, 10, 0, 0, 0xD800, 0},
+    {5, 10, 0, 0, 0xDBFF, 0},
+    {5, 10, 0, 0, 0xDC00, 0},
+    {5, 10, 0, 0, 0xDFFF, 0},
+
+    {5, 10, 1, 1, 0xD800, 1},
+    {5, 10, 1, 1, 0xDBFF, 1},
+    {5, 10, 1, 1, 0xDC00, 1},
+    {5, 10, 1, 1, 0xDFFF, 1},
+
+    {5, 10, 2, 3, 0xD800, 2},
+    {5, 10, 2, 3, 0xDBFF, 2},
+    {5, 10, 2, 3, 0xDC00, 2},
+    {5, 10, 2, 3, 0xDFFF, 2},
+
+    // make the leading surrogate a trailing one
+    {5, 10, 3, 6, 0xDC00, 3},
+    {5, 10, 3, 6, 0xDFFF, 3},
+
+    // make the trailing surrogate a leading one
+    {5, 10, 3, 6, 0xD800, 4},
+    {5, 10, 3, 6, 0xDBFF, 4},
+
+    // make the trailing surrogate a BMP char
+    {5, 10, 3, 6, u'z', 4},
+
+    // make the trailing surrogate a leading one and incomplete last code point
+    {4, 10, 3, 6, 0xD800, 4},
+    {4, 10, 3, 6, 0xDBFF, 4},
+
+    // make the trailing surrogate a BMP char and incomplete last code point
+    {4, 10, 3, 6, u'z', 4},
+  };
+
+  for (auto t : offsets)
+    {
+      char16_t in[5] = {};
+      char out[10] = {};
+      VERIFY (t.out_size <= array_size (out));
+      VERIFY (t.expected_in_next <= t.in_size);
+      VERIFY (t.expected_out_next <= t.out_size);
+      char_traits<char16_t>::copy (in, valid_in, t.in_size);
+      in[t.replace_pos] = t.replace_char;
+
+      auto state = mbstate_t{};
+      auto in_next = (const char16_t *) nullptr;
+      auto out_next = (char *) nullptr;
+      auto res = codecvt_base::result ();
+
+      res = cvt.out (state, in, in + t.in_size, in_next, out, out + t.out_size,
+		     out_next);
+      VERIFY (res == cvt.error);
+      VERIFY (in_next == in + t.expected_in_next);
+      VERIFY (out_next == out + t.expected_out_next);
+      VERIFY (char_traits<char>::compare (out, u8exp, t.expected_out_next)
+	      == 0);
+      if (t.expected_out_next < array_size (out))
+	VERIFY (out[t.expected_out_next] == 0);
+    }
+}
 
 // tests .out() function of codecvt<char16_t, char, mbstate>
 void
@@ -725,6 +797,7 @@ utf16_to_utf8_out (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
   utf16_to_utf8_out_ok (cvt);
   utf16_to_utf8_out_partial (cvt);
+  utf16_to_utf8_out_error (cvt);
 }
 
 void
