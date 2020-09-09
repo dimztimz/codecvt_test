@@ -527,10 +527,96 @@ utf8_to_utf16_in_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
 }
 
 void
+utf8_to_utf16_in_error (const codecvt<char16_t, char, mbstate_t> &cvt)
+{
+  const char valid_in[] = "bш\uAAAA\U0010AAAA";
+  const char16_t u16exp[] = u"bш\uAAAA\U0010AAAA";
+
+  static_assert (array_size (valid_in) == 11, "");
+  static_assert (array_size (u16exp) == 6, "");
+  VERIFY (char_traits<char>::length (valid_in) == 10);
+  VERIFY (char_traits<char16_t>::length (u16exp) == 5);
+
+  test_offsets_error<char> offsets[] = {
+
+    // replace leading byte with invalid byte
+    {1, 5, 0, 0, '\xFF', 0},
+    {3, 5, 1, 1, '\xFF', 1},
+    {6, 5, 3, 2, '\xFF', 3},
+    {10, 5, 6, 3, '\xFF', 6},
+
+    // replace first trailing byte with ASCII byte
+    {3, 5, 1, 1, 'z', 2},
+    {6, 5, 3, 2, 'z', 4},
+    {10, 5, 6, 3, 'z', 7},
+
+    // replace first trailing byte with invalid byte
+    {3, 5, 1, 1, '\xFF', 2},
+    {6, 5, 3, 2, '\xFF', 4},
+    {10, 5, 6, 3, '\xFF', 7},
+
+    // replace first trailing byte with ASCII byte, also incomplete at end
+    {5, 5, 3, 2, 'z', 4},
+    {8, 5, 6, 3, 'z', 7},
+    {9, 5, 6, 3, 'z', 7},
+
+    // replace first trailing byte with invalid byte, also incomplete at end
+    {5, 5, 3, 2, '\xFF', 4},
+    {8, 5, 6, 3, '\xFF', 7},
+    {9, 5, 6, 3, '\xFF', 7},
+
+    // replace second trailing byte with ASCII byte
+    {6, 5, 3, 2, 'z', 5},
+    {10, 5, 6, 3, 'z', 8},
+
+    // replace second trailing byte with invalid byte
+    {6, 5, 3, 2, '\xFF', 5},
+    {10, 5, 6, 3, '\xFF', 8},
+
+    // replace second trailing byte with ASCII byte, also incomplete at end
+    {9, 5, 6, 3, 'z', 8},
+
+    // replace second trailing byte with invalid byte, also incomplete at end
+    {9, 5, 6, 3, '\xFF', 8},
+
+    // replace third trailing byte
+    {10, 5, 6, 3, 'z', 9},
+    {10, 5, 6, 3, '\xFF', 9}
+
+  };
+  for (auto t : offsets)
+    {
+      char in[10] = {};
+      char16_t out[5] = {};
+      VERIFY (t.out_size <= array_size (out));
+      VERIFY (t.expected_in_next <= t.in_size);
+      VERIFY (t.expected_out_next <= t.out_size);
+      char_traits<char>::copy (in, valid_in, t.in_size);
+      in[t.replace_pos] = t.replace_char;
+
+      auto state = mbstate_t{};
+      auto in_next = (const char *) nullptr;
+      auto out_next = (char16_t *) nullptr;
+      auto res = codecvt_base::result ();
+
+      res = cvt.in (state, in, in + t.in_size, in_next, out, out + t.out_size,
+		    out_next);
+      VERIFY (res == cvt.error);
+      VERIFY (in_next == in + t.expected_in_next);
+      VERIFY (out_next == out + t.expected_out_next);
+      VERIFY (char_traits<char16_t>::compare (out, u16exp, t.expected_out_next)
+	      == 0);
+      if (t.expected_out_next < array_size (out))
+	VERIFY (out[t.expected_out_next] == 0);
+    }
+}
+
+void
 utf8_to_utf16_in (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
   utf8_to_utf16_in_ok (cvt);
   utf8_to_utf16_in_partial (cvt);
+  utf8_to_utf16_in_error (cvt);
 }
 
 void
