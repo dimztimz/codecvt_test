@@ -755,13 +755,6 @@ utf16_to_utf8_out_error (const codecvt<char16_t, char, mbstate_t> &cvt)
 
     // make the trailing surrogate a BMP char
     {5, 10, 3, 6, u'z', 4},
-
-    // make the trailing surrogate a leading one and incomplete last code point
-    {4, 10, 3, 6, 0xD800, 4},
-    {4, 10, 3, 6, 0xDBFF, 4},
-
-    // make the trailing surrogate a BMP char and incomplete last code point
-    {4, 10, 3, 6, u'z', 4},
   };
 
   for (auto t : offsets)
