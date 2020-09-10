@@ -194,11 +194,13 @@ utf8_to_utf32_in_error (const codecvt<char32_t, char, mbstate_t> &cvt)
     {10, 4, 6, 3, '\xFF', 7},
 
     // replace first trailing byte with ASCII byte, also incomplete at end
+    // TODO discuss if partial is also acceptable here
     {5, 4, 3, 2, 'z', 4},
     {8, 4, 6, 3, 'z', 7},
     {9, 4, 6, 3, 'z', 7},
 
     // replace first trailing byte with invalid byte, also incomplete at end
+    // TODO discuss if partial is also acceptable here
     {5, 4, 3, 2, '\xFF', 4},
     {8, 4, 6, 3, '\xFF', 7},
     {9, 4, 6, 3, '\xFF', 7},
@@ -212,9 +214,11 @@ utf8_to_utf32_in_error (const codecvt<char32_t, char, mbstate_t> &cvt)
     {10, 4, 6, 3, '\xFF', 8},
 
     // replace second trailing byte with ASCII byte, also incomplete at end
+    // TODO discuss if partial is also acceptable here
     {9, 4, 6, 3, 'z', 8},
 
     // replace second trailing byte with invalid byte, also incomplete at end
+    // TODO discuss if partial is also acceptable here
     {9, 4, 6, 3, '\xFF', 8},
 
     // replace third trailing byte
@@ -556,11 +560,13 @@ utf8_to_utf16_in_error (const codecvt<char16_t, char, mbstate_t> &cvt)
     {10, 5, 6, 3, '\xFF', 7},
 
     // replace first trailing byte with ASCII byte, also incomplete at end
+    // TODO discuss if partial is also acceptable here
     {5, 5, 3, 2, 'z', 4},
     {8, 5, 6, 3, 'z', 7},
     {9, 5, 6, 3, 'z', 7},
 
     // replace first trailing byte with invalid byte, also incomplete at end
+    // TODO discuss if partial is also acceptable here
     {5, 5, 3, 2, '\xFF', 4},
     {8, 5, 6, 3, '\xFF', 7},
     {9, 5, 6, 3, '\xFF', 7},
@@ -574,9 +580,11 @@ utf8_to_utf16_in_error (const codecvt<char16_t, char, mbstate_t> &cvt)
     {10, 5, 6, 3, '\xFF', 8},
 
     // replace second trailing byte with ASCII byte, also incomplete at end
+    // TODO discuss if partial is also acceptable here
     {9, 5, 6, 3, 'z', 8},
 
     // replace second trailing byte with invalid byte, also incomplete at end
+    // TODO discuss if partial is also acceptable here
     {9, 5, 6, 3, '\xFF', 8},
 
     // replace third trailing byte
