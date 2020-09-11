@@ -1029,20 +1029,35 @@ utf8_to_ucs2_in_error (const codecvt<char16_t, char, mbstate_t> &cvt)
     {10, 5, 6, 3, 'z', 9},
     {10, 5, 6, 3, '\xFF', 9},
 
-    // Don't replace anything, show full or partial 4-byte CP
+    // When we see a leading byte of 4-byte CP, we should return error, no
+    // matter if it is incomplete at the end or has errors in the trailing
+    // bytes.
+
+    // Don't replace anything, show full 4-byte CP
+    {10, 4, 6, 3, 'b', 0},
     {10, 5, 6, 3, 'b', 0},
 
-    //{10, 3, 6, 3}, // no space for fourth CP
-    //{10, 4, 6, 3}, // no space for fourth CP
+    // Don't replace anything, show incomplete 4-byte CP at the end
+    {7, 4, 6, 3, 'b', 0}, // incomplete fourth CP
+    {8, 4, 6, 3, 'b', 0}, // incomplete fourth CP
+    {9, 4, 6, 3, 'b', 0}, // incomplete fourth CP
     {7, 5, 6, 3, 'b', 0}, // incomplete fourth CP
     {8, 5, 6, 3, 'b', 0}, // incomplete fourth CP
     {9, 5, 6, 3, 'b', 0}, // incomplete fourth CP
-    //{7, 3, 6, 3, 'b', 0}, // incomplete fourth CP, and no space for it
-    //{8, 3, 6, 3, 'b', 0}, // incomplete fourth CP, and no space for it
-    //{9, 3, 6, 3, 'b', 0}, // incomplete fourth CP, and no space for it
-    //{7, 4, 6, 3, 'b', 0}, // incomplete fourth CP, and no space for it
-    //{8, 4, 6, 3, 'b', 0}, // incomplete fourth CP, and no space for it
-    //{9, 4, 6, 3, 'b', 0}, // incomplete fourth CP, and no space for it
+
+    // replace first trailing byte with ASCII byte, also incomplete at end
+    {8, 5, 6, 3, 'z', 7},
+    {9, 5, 6, 3, 'z', 7},
+
+    // replace first trailing byte with invalid byte, also incomplete at end
+    {8, 5, 6, 3, '\xFF', 7},
+    {9, 5, 6, 3, '\xFF', 7},
+
+    // replace second trailing byte with ASCII byte, also incomplete at end
+    {9, 5, 6, 3, 'z', 8},
+
+    // replace second trailing byte with invalid byte, also incomplete at end
+    {9, 5, 6, 3, '\xFF', 8},
 
   };
   for (auto t : offsets)
@@ -1089,19 +1104,17 @@ utf8_to_ucs2_in_error_or_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
 
     // replace first trailing byte with ASCII byte, also incomplete at end
     {5, 5, 3, 2, 'z', 4},
-    {8, 5, 6, 3, 'z', 7},
-    {9, 5, 6, 3, 'z', 7},
 
     // replace first trailing byte with invalid byte, also incomplete at end
     {5, 5, 3, 2, '\xFF', 4},
-    {8, 5, 6, 3, '\xFF', 7},
-    {9, 5, 6, 3, '\xFF', 7},
 
-    // replace second trailing byte with ASCII byte, also incomplete at end
-    {9, 5, 6, 3, 'z', 8},
-
-    // replace second trailing byte with invalid byte, also incomplete at end
-    {9, 5, 6, 3, '\xFF', 8},
+    // partial may be return in the test cases bellow if the decoder
+    // stops because it has no space and it does not examins the 4-byte CP at
+    // all.
+    {10, 3, 6, 3, 'b', 0}, // no space for fourth CP
+    {7, 3, 6, 3, 'b', 0},  // incomplete fourth CP, and no space for it
+    {8, 3, 6, 3, 'b', 0},  // incomplete fourth CP, and no space for it
+    {9, 3, 6, 3, 'b', 0},  // incomplete fourth CP, and no space for it
   };
   for (auto t : offsets)
     {
@@ -1138,7 +1151,7 @@ utf8_to_ucs2_in ()
   utf8_to_ucs2_in_ok (*cvt_ptr);
   utf8_to_ucs2_in_partial (*cvt_ptr);
   utf8_to_ucs2_in_error (*cvt_ptr);
-  // utf8_to_ucs2_in_error_or_partial (*cvt_ptr);
+  utf8_to_ucs2_in_error_or_partial (*cvt_ptr);
 }
 
 int
