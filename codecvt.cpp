@@ -1088,7 +1088,6 @@ utf8_to_ucs2_in_error (const codecvt<char16_t, char, mbstate_t> &cvt)
 }
 
 // TODO discuss if partial is also acceptable here
-// TODO simply copied from utf8_to_utf16_in_error_or_partial()
 void
 utf8_to_ucs2_in_error_or_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
