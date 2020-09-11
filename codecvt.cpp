@@ -1209,24 +1209,8 @@ ucs2_to_utf8_out_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
     {3, 5, 2, 3}, // no space for third CP
 
     /*
-    //error or partial
-    {5, 6, 3, 6}, // no space for fourth CP
 
-    //error
-    {5, 7, 3, 6}, // no space for fourth CP
-    {5, 8, 3, 6}, // no space for fourth CP
-    {5, 9, 3, 6}, // no space for fourth CP
 
-    //error
-    {4, 10, 3, 6}, // incomplete fourth CP
-
-    //error or partial
-    {4, 6, 3, 6}, // incomplete fourth CP, and no space for it
-
-    //error
-    {4, 7, 3, 6}, // incomplete fourth CP, and no space for it
-    {4, 8, 3, 6}, // incomplete fourth CP, and no space for it
-    {4, 9, 3, 6}, // incomplete fourth CP, and no space for it
 */
   };
   for (auto t : offsets)
@@ -1291,6 +1275,15 @@ ucs2_to_utf8_out_error (const codecvt<char16_t, char, mbstate_t> &cvt)
     // make the trailing surrogate a BMP char
     {5, 10, 3, 6, u'z', 4},
 
+    {5, 7, 3, 6, u'b', 0}, // no space for fourth CP
+    {5, 8, 3, 6, u'b', 0}, // no space for fourth CP
+    {5, 9, 3, 6, u'b', 0}, // no space for fourth CP
+
+    {4, 10, 3, 6, u'b', 0}, // incomplete fourth CP
+    {4, 7, 3, 6, u'b', 0},  // incomplete fourth CP, and no space for it
+    {4, 8, 3, 6, u'b', 0},  // incomplete fourth CP, and no space for it
+    {4, 9, 3, 6, u'b', 0},  // incomplete fourth CP, and no space for it
+
   };
 
   for (auto t : offsets)
@@ -1320,6 +1313,51 @@ ucs2_to_utf8_out_error (const codecvt<char16_t, char, mbstate_t> &cvt)
     }
 }
 
+void
+ucs2_to_utf8_out_error_or_partial (
+  const codecvt<char16_t, char, mbstate_t> &cvt)
+{
+  const char16_t valid_in[] = u"bш\uAAAA\U0010AAAA";
+  const char u8exp[] = "bш\uAAAA\U0010AAAA";
+
+  static_assert (array_size (valid_in) == 6, "");
+  static_assert (array_size (u8exp) == 11, "");
+  VERIFY (char_traits<char16_t>::length (valid_in) == 5);
+  VERIFY (char_traits<char>::length (u8exp) == 10);
+
+  test_offsets_error<char16_t> offsets[] = {
+    {5, 6, 3, 6, u'b', 0}, // no space for fourth CP
+    {4, 6, 3, 6, u'b', 0}, // incomplete fourth CP, and no space for it
+
+  };
+
+  for (auto t : offsets)
+    {
+      char16_t in[5] = {};
+      char out[10] = {};
+      VERIFY (t.out_size <= array_size (out));
+      VERIFY (t.expected_in_next <= t.in_size);
+      VERIFY (t.expected_out_next <= t.out_size);
+      char_traits<char16_t>::copy (in, valid_in, t.in_size);
+      in[t.replace_pos] = t.replace_char;
+
+      auto state = mbstate_t{};
+      auto in_next = (const char16_t *) nullptr;
+      auto out_next = (char *) nullptr;
+      auto res = codecvt_base::result ();
+
+      res = cvt.out (state, in, in + t.in_size, in_next, out, out + t.out_size,
+		     out_next);
+      VERIFY (res == cvt.error || res == cvt.partial);
+      VERIFY (in_next == in + t.expected_in_next);
+      VERIFY (out_next == out + t.expected_out_next);
+      VERIFY (char_traits<char>::compare (out, u8exp, t.expected_out_next)
+	      == 0);
+      if (t.expected_out_next < array_size (out))
+	VERIFY (out[t.expected_out_next] == 0);
+    }
+}
+
 // tests .out() function of codecvt<char16_t, char, mbstate>
 void
 ucs2_to_utf8_out (const codecvt<char16_t, char, mbstate_t> &cvt)
@@ -1327,6 +1365,7 @@ ucs2_to_utf8_out (const codecvt<char16_t, char, mbstate_t> &cvt)
   ucs2_to_utf8_out_ok (cvt);
   ucs2_to_utf8_out_partial (cvt);
   ucs2_to_utf8_out_error (cvt);
+  ucs2_to_utf8_out_error_or_partial (cvt);
 }
 
 void
