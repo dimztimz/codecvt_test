@@ -3,10 +3,7 @@
 
 #include <codecvt>
 #include <cstdio>
-#include <iostream>
 #include <locale>
-#include <string>
-//#include <signal.h>
 
 bool global_error = false;
 
@@ -19,7 +16,6 @@ bool global_error = false;
 	  printf (                                                             \
 	    "Error in line: %d,\n    Function: %s,\n    Assertion: %s\n",      \
 	    __LINE__, __FUNCTION__, #X);                                       \
-	  /*raise (SIGTRAP);*/                                                 \
 	}                                                                      \
     }                                                                          \
   while (0)
