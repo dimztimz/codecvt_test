@@ -51,26 +51,29 @@ auto constexpr array_size (const T (&)[N]) -> size_t
   return N;
 }
 
+template <class CharT>
 void
-utf8_to_utf32_in_ok (const codecvt<char32_t, char, mbstate_t> &cvt)
+utf8_to_utf32_in_ok (const codecvt<CharT, char, mbstate_t> &cvt)
 {
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
   const char in[] = "bш\uAAAA\U0010AAAA";
-  const char32_t u32exp[] = U"bш\uAAAA\U0010AAAA";
+  const char32_t expected[] = U"bш\uAAAA\U0010AAAA";
+  CharT exp[array_size (expected)] = {};
+  std::copy (begin (expected), end (expected), begin (exp));
 
-  static_assert ((array_size (in) == 11), "");
-  static_assert (array_size (u32exp) == 5, "");
+  static_assert (array_size (in) == 11, "");
+  static_assert (array_size (exp) == 5, "");
   VERIFY (char_traits<char>::length (in) == 10);
-  VERIFY (char_traits<char32_t>::length (u32exp) == 4);
+  VERIFY (char_traits<CharT>::length (exp) == 4);
 
   test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {3, 2}, {6, 3}, {10, 4}};
   for (auto t : offsets)
     {
-      char32_t out[4] = {};
+      CharT out[4] = {};
       VERIFY (t.out_size <= array_size (out));
       auto state = mbstate_t{};
       auto in_next = (const char *) nullptr;
-      auto out_next = (char32_t *) nullptr;
+      auto out_next = (CharT *) nullptr;
       auto res = codecvt_base::result ();
 
       res = cvt.in (state, in, in + t.in_size, in_next, out, out + t.out_size,
@@ -78,18 +81,18 @@ utf8_to_utf32_in_ok (const codecvt<char32_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.ok);
       VERIFY (in_next == in + t.in_size);
       VERIFY (out_next == out + t.out_size);
-      VERIFY (char_traits<char32_t>::compare (out, u32exp, t.out_size) == 0);
+      VERIFY (char_traits<CharT>::compare (out, exp, t.out_size) == 0);
       if (t.out_size < array_size (out))
 	VERIFY (out[t.out_size] == 0);
     }
 
   for (auto t : offsets)
     {
-      char32_t out[5] = {};
+      CharT out[5] = {};
       VERIFY (t.out_size <= array_size (out));
       auto state = mbstate_t{};
       auto in_next = (const char *) nullptr;
-      auto out_next = (char32_t *) nullptr;
+      auto out_next = (CharT *) nullptr;
       auto res = codecvt_base::result ();
 
       res
@@ -97,23 +100,26 @@ utf8_to_utf32_in_ok (const codecvt<char32_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.ok);
       VERIFY (in_next == in + t.in_size);
       VERIFY (out_next == out + t.out_size);
-      VERIFY (char_traits<char32_t>::compare (out, u32exp, t.out_size) == 0);
+      VERIFY (char_traits<CharT>::compare (out, exp, t.out_size) == 0);
       if (t.out_size < array_size (out))
 	VERIFY (out[t.out_size] == 0);
     }
 }
 
+template <class CharT>
 void
-utf8_to_utf32_in_partial (const codecvt<char32_t, char, mbstate_t> &cvt)
+utf8_to_utf32_in_partial (const codecvt<CharT, char, mbstate_t> &cvt)
 {
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
   const char in[] = "bш\uAAAA\U0010AAAA";
-  const char32_t u32exp[] = U"bш\uAAAA\U0010AAAA";
+  const char32_t expected[] = U"bш\uAAAA\U0010AAAA";
+  CharT exp[array_size (expected)] = {};
+  std::copy (begin (expected), end (expected), begin (exp));
 
   static_assert (array_size (in) == 11, "");
-  static_assert (array_size (u32exp) == 5, "");
+  static_assert (array_size (exp) == 5, "");
   VERIFY (char_traits<char>::length (in) == 10);
-  VERIFY (char_traits<char32_t>::length (u32exp) == 4);
+  VERIFY (char_traits<CharT>::length (exp) == 4);
 
   test_offsets_partial offsets[] = {
     {1, 0, 0, 0}, // no space for first CP
@@ -139,13 +145,13 @@ utf8_to_utf32_in_partial (const codecvt<char32_t, char, mbstate_t> &cvt)
 
   for (auto t : offsets)
     {
-      char32_t out[4] = {};
+      CharT out[4] = {};
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
       auto state = mbstate_t{};
       auto in_next = (const char *) nullptr;
-      auto out_next = (char32_t *) nullptr;
+      auto out_next = (CharT *) nullptr;
       auto res = codecvt_base::result ();
 
       res = cvt.in (state, in, in + t.in_size, in_next, out, out + t.out_size,
@@ -153,23 +159,26 @@ utf8_to_utf32_in_partial (const codecvt<char32_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.partial);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char32_t>::compare (out, u32exp, t.expected_out_next)
-	      == 0);
+      VERIFY (char_traits<CharT>::compare (out, exp, t.expected_out_next) == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
     }
 }
 
+template <class CharT>
 void
-utf8_to_utf32_in_error (const codecvt<char32_t, char, mbstate_t> &cvt)
+utf8_to_utf32_in_error (const codecvt<CharT, char, mbstate_t> &cvt)
 {
+  // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
   const char valid_in[] = "bш\uAAAA\U0010AAAA";
-  const char32_t u32exp[] = U"bш\uAAAA\U0010AAAA";
+  const char32_t expected[] = U"bш\uAAAA\U0010AAAA";
+  CharT exp[array_size (expected)] = {};
+  std::copy (begin (expected), end (expected), begin (exp));
 
   static_assert (array_size (valid_in) == 11, "");
-  static_assert (array_size (u32exp) == 5, "");
+  static_assert (array_size (exp) == 5, "");
   VERIFY (char_traits<char>::length (valid_in) == 10);
-  VERIFY (char_traits<char32_t>::length (u32exp) == 4);
+  VERIFY (char_traits<CharT>::length (exp) == 4);
 
   test_offsets_error<char> offsets[] = {
 
@@ -220,7 +229,7 @@ utf8_to_utf32_in_error (const codecvt<char32_t, char, mbstate_t> &cvt)
   for (auto t : offsets)
     {
       char in[10] = {};
-      char32_t out[4] = {};
+      CharT out[4] = {};
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
@@ -229,7 +238,7 @@ utf8_to_utf32_in_error (const codecvt<char32_t, char, mbstate_t> &cvt)
 
       auto state = mbstate_t{};
       auto in_next = (const char *) nullptr;
-      auto out_next = (char32_t *) nullptr;
+      auto out_next = (CharT *) nullptr;
       auto res = codecvt_base::result ();
 
       res = cvt.in (state, in, in + t.in_size, in_next, out, out + t.out_size,
@@ -237,15 +246,15 @@ utf8_to_utf32_in_error (const codecvt<char32_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.error);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char32_t>::compare (out, u32exp, t.expected_out_next)
-	      == 0);
+      VERIFY (char_traits<CharT>::compare (out, exp, t.expected_out_next) == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
     }
 }
 
+template <class CharT>
 void
-utf8_to_utf32_in (const codecvt<char32_t, char, mbstate_t> &cvt)
+utf8_to_utf32_in (const codecvt<CharT, char, mbstate_t> &cvt)
 {
   utf8_to_utf32_in_ok (cvt);
   utf8_to_utf32_in_partial (cvt);
@@ -261,6 +270,11 @@ utf8_to_utf32_in ()
 
   auto cvt_ptr = to_unique_ptr (new codecvt_utf8<char32_t> ());
   utf8_to_utf32_in (*cvt_ptr);
+
+#if __GNUC__ && __SIZEOF_WCHAR_T__ == 4
+  auto cvt_ptr2 = to_unique_ptr (new codecvt_utf8<wchar_t> ());
+  utf8_to_utf32_in (*cvt_ptr2);
+#endif
 }
 
 void
