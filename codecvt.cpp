@@ -72,6 +72,7 @@ utf8_to_utf32_in_ok (const codecvt<CharT, char, mbstate_t> &cvt)
   for (auto t : offsets)
     {
       CharT out[array_size (exp) - 1] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       auto state = mbstate_t{};
       auto in_next = (const char *) nullptr;
@@ -150,6 +151,7 @@ utf8_to_utf32_in_partial (const codecvt<CharT, char, mbstate_t> &cvt)
   for (auto t : offsets)
     {
       CharT out[array_size (exp) - 1] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
@@ -236,6 +238,7 @@ utf8_to_utf32_in_error (const codecvt<CharT, char, mbstate_t> &cvt)
     {
       char in[array_size (valid_in)] = {};
       CharT out[array_size (exp) - 1] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
@@ -288,6 +291,7 @@ utf32_to_utf8_out_ok (const codecvt<CharT, char, mbstate_t> &cvt)
   for (auto t : offsets)
     {
       char out[array_size (exp) - 1] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       auto state = mbstate_t{};
       auto in_next = (const CharT *) nullptr;
@@ -340,7 +344,9 @@ utf32_to_utf8_out_partial (const codecvt<CharT, char, mbstate_t> &cvt)
   for (auto t : offsets)
     {
       char out[array_size (exp) - 1] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
+      VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
       auto state = mbstate_t{};
       auto in_next = (const CharT *) nullptr;
@@ -379,6 +385,7 @@ utf32_to_utf8_out_error (const codecvt<CharT, char, mbstate_t> &cvt)
     {
       CharT in[array_size (valid_in)] = {};
       char out[array_size (exp) - 1] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
@@ -450,6 +457,7 @@ utf8_to_utf16_in_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
   for (auto t : offsets)
     {
       char16_t out[array_size (exp) - 1] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       auto state = mbstate_t{};
       auto in_next = (const char *) nullptr;
@@ -528,6 +536,7 @@ utf8_to_utf16_in_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
   for (auto t : offsets)
     {
       char16_t out[array_size (exp) - 1] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
@@ -609,6 +618,7 @@ utf8_to_utf16_in_error (const codecvt<char16_t, char, mbstate_t> &cvt)
     {
       char in[array_size (valid_in)] = {};
       char16_t out[array_size (exp) - 1] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
@@ -667,6 +677,7 @@ utf16_to_utf8_out_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
   for (auto t : offsets)
     {
       char out[array_size (exp) - 1] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       auto state = mbstate_t{};
       auto in_next = (const char16_t *) nullptr;
@@ -721,7 +732,9 @@ utf16_to_utf8_out_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
   for (auto t : offsets)
     {
       char out[array_size (exp) - 1] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
+      VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
       auto state = mbstate_t{};
       auto in_next = (const char16_t *) nullptr;
@@ -782,6 +795,7 @@ utf16_to_utf8_out_error (const codecvt<char16_t, char, mbstate_t> &cvt)
     {
       char16_t in[array_size (valid_in)] = {};
       char out[array_size (exp) - 1] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
@@ -841,6 +855,7 @@ utf8_to_ucs2_in_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
   for (auto t : offsets)
     {
       char16_t out[3] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       auto state = mbstate_t{};
       auto in_next = (const char *) nullptr;
@@ -860,6 +875,7 @@ utf8_to_ucs2_in_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
   for (auto t : offsets)
     {
       char16_t out[4] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       auto state = mbstate_t{};
       auto in_next = (const char *) nullptr;
@@ -906,6 +922,7 @@ utf8_to_ucs2_in_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
   for (auto t : offsets)
     {
       char16_t out[3] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
@@ -1007,6 +1024,7 @@ utf8_to_ucs2_in_error (const codecvt<char16_t, char, mbstate_t> &cvt)
     {
       char in[10] = {};
       char16_t out[5] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
@@ -1055,6 +1073,7 @@ utf8_to_ucs2_in_error_or_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
     {
       char in[10] = {};
       char16_t out[5] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
@@ -1105,6 +1124,7 @@ ucs2_to_utf8_out_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
   for (auto t : offsets)
     {
       char out[6] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       auto state = mbstate_t{};
       auto in_next = (const char16_t *) nullptr;
@@ -1147,7 +1167,9 @@ ucs2_to_utf8_out_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
   for (auto t : offsets)
     {
       char out[6] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
+      VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
       auto state = mbstate_t{};
       auto in_next = (const char16_t *) nullptr;
@@ -1221,6 +1243,7 @@ ucs2_to_utf8_out_error (const codecvt<char16_t, char, mbstate_t> &cvt)
     {
       char16_t in[5] = {};
       char out[10] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
@@ -1266,6 +1289,7 @@ ucs2_to_utf8_out_error_or_partial (
     {
       char16_t in[5] = {};
       char out[10] = {};
+      VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
