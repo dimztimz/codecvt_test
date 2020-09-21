@@ -854,7 +854,7 @@ utf8_to_ucs2_in_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
   test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {3, 2}, {6, 3}};
   for (auto t : offsets)
     {
-      char16_t out[3] = {};
+      char16_t out[array_size (exp) - 1] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       auto state = mbstate_t{};
@@ -874,7 +874,7 @@ utf8_to_ucs2_in_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
 
   for (auto t : offsets)
     {
-      char16_t out[4] = {};
+      char16_t out[array_size (exp)] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       auto state = mbstate_t{};
@@ -921,7 +921,7 @@ utf8_to_ucs2_in_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
 
   for (auto t : offsets)
     {
-      char16_t out[3] = {};
+      char16_t out[array_size (exp) - 1] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
@@ -947,12 +947,12 @@ void
 utf8_to_ucs2_in_error (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
   const char valid_in[] = "bш\uAAAA\U0010AAAA";
-  const char16_t exp[] = u"bш\uAAAA";
+  const char16_t exp[] = u"bш\uAAAA\U0010AAAA";
 
   static_assert (array_size (valid_in) == 11, "");
-  static_assert (array_size (exp) == 4, "");
+  static_assert (array_size (exp) == 6, "");
   VERIFY (char_traits<char>::length (valid_in) == 10);
-  VERIFY (char_traits<char16_t>::length (exp) == 3);
+  VERIFY (char_traits<char16_t>::length (exp) == 5);
 
   test_offsets_error<char> offsets[] = {
 
@@ -1023,7 +1023,7 @@ utf8_to_ucs2_in_error (const codecvt<char16_t, char, mbstate_t> &cvt)
   for (auto t : offsets)
     {
       char in[10] = {};
-      char16_t out[5] = {};
+      char16_t out[array_size (exp) - 1] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
@@ -1072,7 +1072,7 @@ utf8_to_ucs2_in_error_or_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
   for (auto t : offsets)
     {
       char in[10] = {};
-      char16_t out[5] = {};
+      char16_t out[array_size (exp) - 1] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
@@ -1123,7 +1123,7 @@ ucs2_to_utf8_out_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
   const test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}};
   for (auto t : offsets)
     {
-      char out[6] = {};
+      char out[array_size (exp) - 1] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       auto state = mbstate_t{};
@@ -1166,7 +1166,7 @@ ucs2_to_utf8_out_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
   };
   for (auto t : offsets)
     {
-      char out[6] = {};
+      char out[array_size (exp) - 1] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
@@ -1242,7 +1242,7 @@ ucs2_to_utf8_out_error (const codecvt<char16_t, char, mbstate_t> &cvt)
   for (auto t : offsets)
     {
       char16_t in[5] = {};
-      char out[10] = {};
+      char out[array_size (exp) - 1] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
@@ -1288,7 +1288,7 @@ ucs2_to_utf8_out_error_or_partial (
   for (auto t : offsets)
     {
       char16_t in[5] = {};
-      char out[10] = {};
+      char out[array_size (exp) - 1] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
