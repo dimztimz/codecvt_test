@@ -438,12 +438,12 @@ utf8_to_utf16_in_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
   const char in[] = "bш\uAAAA\U0010AAAA";
-  const char16_t u16exp[] = u"bш\uAAAA\U0010AAAA";
+  const char16_t exp[] = u"bш\uAAAA\U0010AAAA";
 
   static_assert ((array_size (in) == 11), "");
-  static_assert (array_size (u16exp) == 6, "");
+  static_assert (array_size (exp) == 6, "");
   VERIFY (char_traits<char>::length (in) == 10);
-  VERIFY (char_traits<char16_t>::length (u16exp) == 5);
+  VERIFY (char_traits<char16_t>::length (exp) == 5);
 
   test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {3, 2}, {6, 3}, {10, 5}};
   for (auto t : offsets)
@@ -460,7 +460,7 @@ utf8_to_utf16_in_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.ok);
       VERIFY (in_next == in + t.in_size);
       VERIFY (out_next == out + t.out_size);
-      VERIFY (char_traits<char16_t>::compare (out, u16exp, t.out_size) == 0);
+      VERIFY (char_traits<char16_t>::compare (out, exp, t.out_size) == 0);
       if (t.out_size < array_size (out))
 	VERIFY (out[t.out_size] == 0);
     }
@@ -479,7 +479,7 @@ utf8_to_utf16_in_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.ok);
       VERIFY (in_next == in + t.in_size);
       VERIFY (out_next == out + t.out_size);
-      VERIFY (char_traits<char16_t>::compare (out, u16exp, t.out_size) == 0);
+      VERIFY (char_traits<char16_t>::compare (out, exp, t.out_size) == 0);
       if (t.out_size < array_size (out))
 	VERIFY (out[t.out_size] == 0);
     }
@@ -490,12 +490,12 @@ utf8_to_utf16_in_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
   const char in[] = "bш\uAAAA\U0010AAAA";
-  const char16_t u16exp[] = u"bш\uAAAA\U0010AAAA";
+  const char16_t exp[] = u"bш\uAAAA\U0010AAAA";
 
   static_assert (array_size (in) == 11, "");
-  static_assert (array_size (u16exp) == 6, "");
+  static_assert (array_size (exp) == 6, "");
   VERIFY (char_traits<char>::length (in) == 10);
-  VERIFY (char_traits<char16_t>::length (u16exp) == 5);
+  VERIFY (char_traits<char16_t>::length (exp) == 5);
 
   test_offsets_partial offsets[] = {
     {1, 0, 0, 0}, // no space for first CP
@@ -540,7 +540,7 @@ utf8_to_utf16_in_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.partial);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char16_t>::compare (out, u16exp, t.expected_out_next)
+      VERIFY (char_traits<char16_t>::compare (out, exp, t.expected_out_next)
 	      == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
@@ -551,12 +551,12 @@ void
 utf8_to_utf16_in_error (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
   const char valid_in[] = "bш\uAAAA\U0010AAAA";
-  const char16_t u16exp[] = u"bш\uAAAA\U0010AAAA";
+  const char16_t exp[] = u"bш\uAAAA\U0010AAAA";
 
   static_assert (array_size (valid_in) == 11, "");
-  static_assert (array_size (u16exp) == 6, "");
+  static_assert (array_size (exp) == 6, "");
   VERIFY (char_traits<char>::length (valid_in) == 10);
-  VERIFY (char_traits<char16_t>::length (u16exp) == 5);
+  VERIFY (char_traits<char16_t>::length (exp) == 5);
 
   test_offsets_error<char> offsets[] = {
 
@@ -624,7 +624,7 @@ utf8_to_utf16_in_error (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.error);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char16_t>::compare (out, u16exp, t.expected_out_next)
+      VERIFY (char_traits<char16_t>::compare (out, exp, t.expected_out_next)
 	      == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
@@ -655,12 +655,12 @@ utf16_to_utf8_out_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
   const char16_t in[] = u"bш\uAAAA\U0010AAAA";
-  const char u8exp[] = "bш\uAAAA\U0010AAAA";
+  const char exp[] = "bш\uAAAA\U0010AAAA";
 
   static_assert (array_size (in) == 6, "");
-  static_assert (array_size (u8exp) == 11, "");
+  static_assert (array_size (exp) == 11, "");
   VERIFY (char_traits<char16_t>::length (in) == 5);
-  VERIFY (char_traits<char>::length (u8exp) == 10);
+  VERIFY (char_traits<char>::length (exp) == 10);
 
   const test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}, {5, 10}};
   for (auto t : offsets)
@@ -677,7 +677,7 @@ utf16_to_utf8_out_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.ok);
       VERIFY (in_next == in + t.in_size);
       VERIFY (out_next == out + t.out_size);
-      VERIFY (char_traits<char>::compare (out, u8exp, t.out_size) == 0);
+      VERIFY (char_traits<char>::compare (out, exp, t.out_size) == 0);
       if (t.out_size < array_size (out))
 	VERIFY (out[t.out_size] == 0);
     }
@@ -688,12 +688,12 @@ utf16_to_utf8_out_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
   const char16_t in[] = u"bш\uAAAA\U0010AAAA";
-  const char u8exp[] = "bш\uAAAA\U0010AAAA";
+  const char exp[] = "bш\uAAAA\U0010AAAA";
 
   static_assert (array_size (in) == 6, "");
-  static_assert (array_size (u8exp) == 11, "");
+  static_assert (array_size (exp) == 11, "");
   VERIFY (char_traits<char16_t>::length (in) == 5);
-  VERIFY (char_traits<char>::length (u8exp) == 10);
+  VERIFY (char_traits<char>::length (exp) == 10);
 
   const test_offsets_partial offsets[] = {
     {1, 0, 0, 0}, // no space for first CP
@@ -732,7 +732,7 @@ utf16_to_utf8_out_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.partial);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char>::compare (out, u8exp, t.expected_out_next)
+      VERIFY (char_traits<char>::compare (out, exp, t.expected_out_next)
 	      == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
@@ -742,12 +742,12 @@ void
 utf16_to_utf8_out_error (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
   const char16_t valid_in[] = u"bш\uAAAA\U0010AAAA";
-  const char u8exp[] = "bш\uAAAA\U0010AAAA";
+  const char exp[] = "bш\uAAAA\U0010AAAA";
 
   static_assert (array_size (valid_in) == 6, "");
-  static_assert (array_size (u8exp) == 11, "");
+  static_assert (array_size (exp) == 11, "");
   VERIFY (char_traits<char16_t>::length (valid_in) == 5);
-  VERIFY (char_traits<char>::length (u8exp) == 10);
+  VERIFY (char_traits<char>::length (exp) == 10);
 
   test_offsets_error<char16_t> offsets[] = {
     {5, 10, 0, 0, 0xD800, 0},
@@ -797,7 +797,7 @@ utf16_to_utf8_out_error (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.error);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char>::compare (out, u8exp, t.expected_out_next)
+      VERIFY (char_traits<char>::compare (out, exp, t.expected_out_next)
 	      == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
@@ -829,12 +829,12 @@ utf8_to_ucs2_in_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
   // UTF-8 string of 1-byte CP, 2-byte CP and 3-byte CP
   const char in[] = "bш\uAAAA";
-  const char16_t u16exp[] = u"bш\uAAAA";
+  const char16_t exp[] = u"bш\uAAAA";
 
   static_assert (array_size (in) == 7, "");
-  static_assert (array_size (u16exp) == 4, "");
+  static_assert (array_size (exp) == 4, "");
   VERIFY (char_traits<char>::length (in) == 6);
-  VERIFY (char_traits<char16_t>::length (u16exp) == 3);
+  VERIFY (char_traits<char16_t>::length (exp) == 3);
 
   test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {3, 2}, {6, 3}};
   for (auto t : offsets)
@@ -851,7 +851,7 @@ utf8_to_ucs2_in_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.ok);
       VERIFY (in_next == in + t.in_size);
       VERIFY (out_next == out + t.out_size);
-      VERIFY (char_traits<char16_t>::compare (out, u16exp, t.out_size) == 0);
+      VERIFY (char_traits<char16_t>::compare (out, exp, t.out_size) == 0);
       if (t.out_size < array_size (out))
 	VERIFY (out[t.out_size] == 0);
     }
@@ -870,7 +870,7 @@ utf8_to_ucs2_in_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.ok);
       VERIFY (in_next == in + t.in_size);
       VERIFY (out_next == out + t.out_size);
-      VERIFY (char_traits<char16_t>::compare (out, u16exp, t.out_size) == 0);
+      VERIFY (char_traits<char16_t>::compare (out, exp, t.out_size) == 0);
       if (t.out_size < array_size (out))
 	VERIFY (out[t.out_size] == 0);
     }
@@ -881,12 +881,12 @@ utf8_to_ucs2_in_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
   // UTF-8 string of 1-byte CP, 2-byte CP and 3-byte CP
   const char in[] = "bш\uAAAA";
-  const char16_t u16exp[] = u"bш\uAAAA";
+  const char16_t exp[] = u"bш\uAAAA";
 
   static_assert (array_size (in) == 7, "");
-  static_assert (array_size (u16exp) == 4, "");
+  static_assert (array_size (exp) == 4, "");
   VERIFY (char_traits<char>::length (in) == 6);
-  VERIFY (char_traits<char16_t>::length (u16exp) == 3);
+  VERIFY (char_traits<char16_t>::length (exp) == 3);
 
   test_offsets_partial offsets[] = {
     {1, 0, 0, 0}, // no space for first CP
@@ -918,7 +918,7 @@ utf8_to_ucs2_in_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.partial);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char16_t>::compare (out, u16exp, t.expected_out_next)
+      VERIFY (char_traits<char16_t>::compare (out, exp, t.expected_out_next)
 	      == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
@@ -929,12 +929,12 @@ void
 utf8_to_ucs2_in_error (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
   const char valid_in[] = "bш\uAAAA\U0010AAAA";
-  const char16_t u16exp[] = u"bш\uAAAA";
+  const char16_t exp[] = u"bш\uAAAA";
 
   static_assert (array_size (valid_in) == 11, "");
-  static_assert (array_size (u16exp) == 4, "");
+  static_assert (array_size (exp) == 4, "");
   VERIFY (char_traits<char>::length (valid_in) == 10);
-  VERIFY (char_traits<char16_t>::length (u16exp) == 3);
+  VERIFY (char_traits<char16_t>::length (exp) == 3);
 
   test_offsets_error<char> offsets[] = {
 
@@ -1022,7 +1022,7 @@ utf8_to_ucs2_in_error (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.error);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char16_t>::compare (out, u16exp, t.expected_out_next)
+      VERIFY (char_traits<char16_t>::compare (out, exp, t.expected_out_next)
 	      == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
@@ -1034,12 +1034,12 @@ void
 utf8_to_ucs2_in_error_or_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
   const char valid_in[] = "bш\uAAAA\U0010AAAA";
-  const char16_t u16exp[] = u"bш\uAAAA\U0010AAAA";
+  const char16_t exp[] = u"bш\uAAAA\U0010AAAA";
 
   static_assert (array_size (valid_in) == 11, "");
-  static_assert (array_size (u16exp) == 6, "");
+  static_assert (array_size (exp) == 6, "");
   VERIFY (char_traits<char>::length (valid_in) == 10);
-  VERIFY (char_traits<char16_t>::length (u16exp) == 5);
+  VERIFY (char_traits<char16_t>::length (exp) == 5);
 
   test_offsets_error<char> offsets[] = {
     // partial may be return in the test cases bellow if the decoder
@@ -1070,7 +1070,7 @@ utf8_to_ucs2_in_error_or_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.error || res == cvt.partial);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char16_t>::compare (out, u16exp, t.expected_out_next)
+      VERIFY (char_traits<char16_t>::compare (out, exp, t.expected_out_next)
 	      == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
@@ -1093,12 +1093,12 @@ ucs2_to_utf8_out_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
   // UTF-8 string of 1-byte CP, 2-byte CP and 3-byte CP
   const char16_t in[] = u"bш\uAAAA";
-  const char u8exp[] = "bш\uAAAA";
+  const char exp[] = "bш\uAAAA";
 
   static_assert (array_size (in) == 4, "");
-  static_assert (array_size (u8exp) == 7, "");
+  static_assert (array_size (exp) == 7, "");
   VERIFY (char_traits<char16_t>::length (in) == 3);
-  VERIFY (char_traits<char>::length (u8exp) == 6);
+  VERIFY (char_traits<char>::length (exp) == 6);
 
   const test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}};
   for (auto t : offsets)
@@ -1115,7 +1115,7 @@ ucs2_to_utf8_out_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.ok);
       VERIFY (in_next == in + t.in_size);
       VERIFY (out_next == out + t.out_size);
-      VERIFY (char_traits<char>::compare (out, u8exp, t.out_size) == 0);
+      VERIFY (char_traits<char>::compare (out, exp, t.out_size) == 0);
       if (t.out_size < array_size (out))
 	VERIFY (out[t.out_size] == 0);
     }
@@ -1126,12 +1126,12 @@ ucs2_to_utf8_out_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
   // UTF-8 string of 1-byte CP, 2-byte CP and 3-byte CP
   const char16_t in[] = u"bш\uAAAA";
-  const char u8exp[] = "bш\uAAAA";
+  const char exp[] = "bш\uAAAA";
 
   static_assert (array_size (in) == 4, "");
-  static_assert (array_size (u8exp) == 7, "");
+  static_assert (array_size (exp) == 7, "");
   VERIFY (char_traits<char16_t>::length (in) == 3);
-  VERIFY (char_traits<char>::length (u8exp) == 6);
+  VERIFY (char_traits<char>::length (exp) == 6);
 
   const test_offsets_partial offsets[] = {
     {1, 0, 0, 0}, // no space for first CP
@@ -1142,11 +1142,6 @@ ucs2_to_utf8_out_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
     {3, 3, 2, 3}, // no space for third CP
     {3, 4, 2, 3}, // no space for third CP
     {3, 5, 2, 3}, // no space for third CP
-
-    /*
-
-
-*/
   };
   for (auto t : offsets)
     {
@@ -1163,7 +1158,7 @@ ucs2_to_utf8_out_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.partial);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char>::compare (out, u8exp, t.expected_out_next)
+      VERIFY (char_traits<char>::compare (out, exp, t.expected_out_next)
 	      == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
@@ -1173,12 +1168,12 @@ void
 ucs2_to_utf8_out_error (const codecvt<char16_t, char, mbstate_t> &cvt)
 {
   const char16_t valid_in[] = u"bш\uAAAA\U0010AAAA";
-  const char u8exp[] = "bш\uAAAA\U0010AAAA";
+  const char exp[] = "bш\uAAAA\U0010AAAA";
 
   static_assert (array_size (valid_in) == 6, "");
-  static_assert (array_size (u8exp) == 11, "");
+  static_assert (array_size (exp) == 11, "");
   VERIFY (char_traits<char16_t>::length (valid_in) == 5);
-  VERIFY (char_traits<char>::length (u8exp) == 10);
+  VERIFY (char_traits<char>::length (exp) == 10);
 
   test_offsets_error<char16_t> offsets[] = {
     {5, 10, 0, 0, 0xD800, 0},
@@ -1241,7 +1236,7 @@ ucs2_to_utf8_out_error (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.error);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char>::compare (out, u8exp, t.expected_out_next)
+      VERIFY (char_traits<char>::compare (out, exp, t.expected_out_next)
 	      == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
@@ -1253,12 +1248,12 @@ ucs2_to_utf8_out_error_or_partial (
   const codecvt<char16_t, char, mbstate_t> &cvt)
 {
   const char16_t valid_in[] = u"bш\uAAAA\U0010AAAA";
-  const char u8exp[] = "bш\uAAAA\U0010AAAA";
+  const char exp[] = "bш\uAAAA\U0010AAAA";
 
   static_assert (array_size (valid_in) == 6, "");
-  static_assert (array_size (u8exp) == 11, "");
+  static_assert (array_size (exp) == 11, "");
   VERIFY (char_traits<char16_t>::length (valid_in) == 5);
-  VERIFY (char_traits<char>::length (u8exp) == 10);
+  VERIFY (char_traits<char>::length (exp) == 10);
 
   test_offsets_error<char16_t> offsets[] = {
     {5, 6, 3, 6, u'b', 0}, // no space for fourth CP
@@ -1286,7 +1281,7 @@ ucs2_to_utf8_out_error_or_partial (
       VERIFY (res == cvt.error || res == cvt.partial);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char>::compare (out, u8exp, t.expected_out_next)
+      VERIFY (char_traits<char>::compare (out, exp, t.expected_out_next)
 	      == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
