@@ -449,7 +449,7 @@ utf8_to_utf16_in_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
   test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {3, 2}, {6, 3}, {10, 5}};
   for (auto t : offsets)
     {
-      char16_t out[5] = {};
+      char16_t out[array_size (exp) - 1] = {};
       VERIFY (t.out_size <= array_size (out));
       auto state = mbstate_t{};
       auto in_next = (const char *) nullptr;
@@ -468,7 +468,7 @@ utf8_to_utf16_in_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
 
   for (auto t : offsets)
     {
-      char16_t out[6] = {};
+      char16_t out[array_size (exp)] = {};
       VERIFY (t.out_size <= array_size (out));
       auto state = mbstate_t{};
       auto in_next = (const char *) nullptr;
@@ -527,7 +527,7 @@ utf8_to_utf16_in_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
 
   for (auto t : offsets)
     {
-      char16_t out[5] = {};
+      char16_t out[array_size (exp) - 1] = {};
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
@@ -607,12 +607,12 @@ utf8_to_utf16_in_error (const codecvt<char16_t, char, mbstate_t> &cvt)
   };
   for (auto t : offsets)
     {
-      char in[10] = {};
-      char16_t out[5] = {};
+      char in[array_size (valid_in)] = {};
+      char16_t out[array_size (exp) - 1] = {};
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
-      char_traits<char>::copy (in, valid_in, t.in_size);
+      char_traits<char>::copy (in, valid_in, array_size (valid_in));
       in[t.replace_pos] = t.replace_char;
 
       auto state = mbstate_t{};
@@ -666,7 +666,7 @@ utf16_to_utf8_out_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
   const test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}, {5, 10}};
   for (auto t : offsets)
     {
-      char out[10] = {};
+      char out[array_size (exp) - 1] = {};
       VERIFY (t.out_size <= array_size (out));
       auto state = mbstate_t{};
       auto in_next = (const char16_t *) nullptr;
@@ -720,7 +720,7 @@ utf16_to_utf8_out_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
   };
   for (auto t : offsets)
     {
-      char out[10] = {};
+      char out[array_size (exp) - 1] = {};
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_out_next <= t.out_size);
       auto state = mbstate_t{};
@@ -780,12 +780,12 @@ utf16_to_utf8_out_error (const codecvt<char16_t, char, mbstate_t> &cvt)
 
   for (auto t : offsets)
     {
-      char16_t in[5] = {};
-      char out[10] = {};
+      char16_t in[array_size (valid_in)] = {};
+      char out[array_size (exp) - 1] = {};
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
-      char_traits<char16_t>::copy (in, valid_in, t.in_size);
+      char_traits<char16_t>::copy (in, valid_in, array_size (valid_in));
       in[t.replace_pos] = t.replace_char;
 
       auto state = mbstate_t{};
