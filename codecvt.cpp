@@ -267,22 +267,6 @@ utf8_to_utf32_in (const codecvt<CharT, char, mbstate_t> &cvt)
   utf8_to_utf32_in_error (cvt);
 }
 
-void
-utf8_to_utf32_in ()
-{
-  auto &cvt
-    = use_facet<codecvt<char32_t, char, mbstate_t>> (locale::classic ());
-  utf8_to_utf32_in (cvt);
-
-  auto cvt_ptr = to_unique_ptr (new codecvt_utf8<char32_t> ());
-  utf8_to_utf32_in (*cvt_ptr);
-
-#if __GNUC__ && __SIZEOF_WCHAR_T__ == 4
-  auto cvt_ptr2 = to_unique_ptr (new codecvt_utf8<wchar_t> ());
-  utf8_to_utf32_in (*cvt_ptr2);
-#endif
-}
-
 template <class CharT>
 void
 utf32_to_utf8_out_ok (const codecvt<CharT, char, mbstate_t> &cvt)
@@ -427,17 +411,24 @@ utf32_to_utf8_out (const codecvt<CharT, char, mbstate_t> &cvt)
 }
 
 void
-utf32_to_utf8_out ()
+test_utf8_utf32_codecvts ()
 {
   auto &cvt
     = use_facet<codecvt<char32_t, char, mbstate_t>> (locale::classic ());
-  utf32_to_utf8_out (cvt);
+  utf8_to_utf32_in (cvt);
 
   auto cvt_ptr = to_unique_ptr (new codecvt_utf8<char32_t> ());
-  utf32_to_utf8_out (*cvt_ptr);
+  utf8_to_utf32_in (*cvt_ptr);
 
-#if __GNUC__ && __SIZEOF_WCHAR_T__ == 4
+#if __STDC_ISO_10646__ || (__GNUC__ && __SIZEOF_WCHAR_T__ == 4)
   auto cvt_ptr2 = to_unique_ptr (new codecvt_utf8<wchar_t> ());
+  utf8_to_utf32_in (*cvt_ptr2);
+#endif
+
+
+  utf32_to_utf8_out (cvt);
+  utf32_to_utf8_out (*cvt_ptr);
+#if __STDC_ISO_10646__ || (__GNUC__ && __SIZEOF_WCHAR_T__ == 4)
   utf32_to_utf8_out (*cvt_ptr2);
 #endif
 }
@@ -1322,8 +1313,7 @@ ucs2_to_utf8_out ()
 int
 main ()
 {
-  utf8_to_utf32_in ();
-  utf32_to_utf8_out ();
+  test_utf8_utf32_codecvts ();
 
   utf8_to_utf16_in ();
   utf16_to_utf8_out ();
