@@ -1084,55 +1084,6 @@ utf8_to_ucs2_in_error (const codecvt<char16_t, char, mbstate_t> &cvt)
     }
 }
 
-// TODO discuss if partial is also acceptable here
-void
-utf8_to_ucs2_in_error_or_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
-{
-  const char valid_in[] = "bш\uAAAA\U0010AAAA";
-  const char16_t exp[] = u"bш\uAAAA\U0010AAAA";
-
-  static_assert (array_size (valid_in) == 11, "");
-  static_assert (array_size (exp) == 6, "");
-  VERIFY (char_traits<char>::length (valid_in) == 10);
-  VERIFY (char_traits<char16_t>::length (exp) == 5);
-
-  test_offsets_error<char> offsets[] = {
-    // partial may be return in the test cases bellow if the decoder
-    // stops because it has no space and it does not examins the 4-byte CP at
-    // all.
-    {10, 3, 6, 3, 'b', 0}, // no space for fourth CP
-    {7, 3, 6, 3, 'b', 0},  // incomplete fourth CP, and no space for it
-    {8, 3, 6, 3, 'b', 0},  // incomplete fourth CP, and no space for it
-    {9, 3, 6, 3, 'b', 0},  // incomplete fourth CP, and no space for it
-  };
-  for (auto t : offsets)
-    {
-      char in[10] = {};
-      char16_t out[array_size (exp) - 1] = {};
-      VERIFY (t.in_size <= array_size (in));
-      VERIFY (t.out_size <= array_size (out));
-      VERIFY (t.expected_in_next <= t.in_size);
-      VERIFY (t.expected_out_next <= t.out_size);
-      char_traits<char>::copy (in, valid_in, t.in_size);
-      in[t.replace_pos] = t.replace_char;
-
-      auto state = mbstate_t{};
-      auto in_next = (const char *) nullptr;
-      auto out_next = (char16_t *) nullptr;
-      auto res = codecvt_base::result ();
-
-      res = cvt.in (state, in, in + t.in_size, in_next, out, out + t.out_size,
-		    out_next);
-      VERIFY (res == cvt.error || res == cvt.partial);
-      VERIFY (in_next == in + t.expected_in_next);
-      VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char16_t>::compare (out, exp, t.expected_out_next)
-	      == 0);
-      if (t.expected_out_next < array_size (out))
-	VERIFY (out[t.expected_out_next] == 0);
-    }
-}
-
 void
 utf8_to_ucs2_in ()
 {
@@ -1141,7 +1092,6 @@ utf8_to_ucs2_in ()
   utf8_to_ucs2_in_ok (*cvt_ptr);
   utf8_to_ucs2_in_partial (*cvt_ptr);
   utf8_to_ucs2_in_error (*cvt_ptr);
-  utf8_to_ucs2_in_error_or_partial (*cvt_ptr);
 }
 
 void
@@ -1303,52 +1253,6 @@ ucs2_to_utf8_out_error (const codecvt<char16_t, char, mbstate_t> &cvt)
     }
 }
 
-void
-ucs2_to_utf8_out_error_or_partial (
-  const codecvt<char16_t, char, mbstate_t> &cvt)
-{
-  const char16_t valid_in[] = u"bш\uAAAA\U0010AAAA";
-  const char exp[] = "bш\uAAAA\U0010AAAA";
-
-  static_assert (array_size (valid_in) == 6, "");
-  static_assert (array_size (exp) == 11, "");
-  VERIFY (char_traits<char16_t>::length (valid_in) == 5);
-  VERIFY (char_traits<char>::length (exp) == 10);
-
-  test_offsets_error<char16_t> offsets[] = {
-    {5, 6, 3, 6, u'b', 0}, // no space for fourth CP
-    {4, 6, 3, 6, u'b', 0}, // incomplete fourth CP, and no space for it
-
-  };
-
-  for (auto t : offsets)
-    {
-      char16_t in[5] = {};
-      char out[array_size (exp) - 1] = {};
-      VERIFY (t.in_size <= array_size (in));
-      VERIFY (t.out_size <= array_size (out));
-      VERIFY (t.expected_in_next <= t.in_size);
-      VERIFY (t.expected_out_next <= t.out_size);
-      char_traits<char16_t>::copy (in, valid_in, t.in_size);
-      in[t.replace_pos] = t.replace_char;
-
-      auto state = mbstate_t{};
-      auto in_next = (const char16_t *) nullptr;
-      auto out_next = (char *) nullptr;
-      auto res = codecvt_base::result ();
-
-      res = cvt.out (state, in, in + t.in_size, in_next, out, out + t.out_size,
-		     out_next);
-      VERIFY (res == cvt.error || res == cvt.partial);
-      VERIFY (in_next == in + t.expected_in_next);
-      VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char>::compare (out, exp, t.expected_out_next)
-	      == 0);
-      if (t.expected_out_next < array_size (out))
-	VERIFY (out[t.expected_out_next] == 0);
-    }
-}
-
 // tests .out() function of codecvt<char16_t, char, mbstate>
 void
 ucs2_to_utf8_out (const codecvt<char16_t, char, mbstate_t> &cvt)
@@ -1356,7 +1260,6 @@ ucs2_to_utf8_out (const codecvt<char16_t, char, mbstate_t> &cvt)
   ucs2_to_utf8_out_ok (cvt);
   ucs2_to_utf8_out_partial (cvt);
   ucs2_to_utf8_out_error (cvt);
-  ucs2_to_utf8_out_error_or_partial (cvt);
 }
 
 void
