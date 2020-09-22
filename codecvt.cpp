@@ -875,27 +875,32 @@ test_utf8_utf16_cvts ()
 #endif
 }
 
+template <class CharT>
 void
-utf8_to_ucs2_in_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
+utf8_to_ucs2_in_ok (const codecvt<CharT, char, mbstate_t> &cvt)
 {
   // UTF-8 string of 1-byte CP, 2-byte CP and 3-byte CP
   const char in[] = "bш\uAAAA";
-  const char16_t exp[] = u"bш\uAAAA";
+  const char16_t exp_literal[] = u"bш\uAAAA";
+  CharT exp[array_size (exp_literal)] = {};
+  copy (begin (exp_literal), end (exp_literal), begin (exp));
 
   static_assert (array_size (in) == 7, "");
+  static_assert (array_size (exp_literal) == 4, "");
   static_assert (array_size (exp) == 4, "");
   VERIFY (char_traits<char>::length (in) == 6);
-  VERIFY (char_traits<char16_t>::length (exp) == 3);
+  VERIFY (char_traits<char16_t>::length (exp_literal) == 3);
+  VERIFY (char_traits<CharT>::length (exp) == 3);
 
   test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {3, 2}, {6, 3}};
   for (auto t : offsets)
     {
-      char16_t out[array_size (exp) - 1] = {};
+      CharT out[array_size (exp) - 1] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       auto state = mbstate_t{};
       auto in_next = (const char *) nullptr;
-      auto out_next = (char16_t *) nullptr;
+      auto out_next = (CharT *) nullptr;
       auto res = codecvt_base::result ();
 
       res = cvt.in (state, in, in + t.in_size, in_next, out, out + t.out_size,
@@ -903,19 +908,19 @@ utf8_to_ucs2_in_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.ok);
       VERIFY (in_next == in + t.in_size);
       VERIFY (out_next == out + t.out_size);
-      VERIFY (char_traits<char16_t>::compare (out, exp, t.out_size) == 0);
+      VERIFY (char_traits<CharT>::compare (out, exp, t.out_size) == 0);
       if (t.out_size < array_size (out))
 	VERIFY (out[t.out_size] == 0);
     }
 
   for (auto t : offsets)
     {
-      char16_t out[array_size (exp)] = {};
+      CharT out[array_size (exp)] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       auto state = mbstate_t{};
       auto in_next = (const char *) nullptr;
-      auto out_next = (char16_t *) nullptr;
+      auto out_next = (CharT *) nullptr;
       auto res = codecvt_base::result ();
 
       res
@@ -923,23 +928,28 @@ utf8_to_ucs2_in_ok (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.ok);
       VERIFY (in_next == in + t.in_size);
       VERIFY (out_next == out + t.out_size);
-      VERIFY (char_traits<char16_t>::compare (out, exp, t.out_size) == 0);
+      VERIFY (char_traits<CharT>::compare (out, exp, t.out_size) == 0);
       if (t.out_size < array_size (out))
 	VERIFY (out[t.out_size] == 0);
     }
 }
 
+template <class CharT>
 void
-utf8_to_ucs2_in_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
+utf8_to_ucs2_in_partial (const codecvt<CharT, char, mbstate_t> &cvt)
 {
   // UTF-8 string of 1-byte CP, 2-byte CP and 3-byte CP
   const char in[] = "bш\uAAAA";
-  const char16_t exp[] = u"bш\uAAAA";
+  const char16_t exp_literal[] = u"bш\uAAAA";
+  CharT exp[array_size (exp_literal)] = {};
+  copy (begin (exp_literal), end (exp_literal), begin (exp));
 
   static_assert (array_size (in) == 7, "");
+  static_assert (array_size (exp_literal) == 4, "");
   static_assert (array_size (exp) == 4, "");
   VERIFY (char_traits<char>::length (in) == 6);
-  VERIFY (char_traits<char16_t>::length (exp) == 3);
+  VERIFY (char_traits<char16_t>::length (exp_literal) == 3);
+  VERIFY (char_traits<CharT>::length (exp) == 3);
 
   test_offsets_partial offsets[] = {
     {1, 0, 0, 0}, // no space for first CP
@@ -957,14 +967,14 @@ utf8_to_ucs2_in_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
 
   for (auto t : offsets)
     {
-      char16_t out[array_size (exp) - 1] = {};
+      CharT out[array_size (exp) - 1] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
       auto state = mbstate_t{};
       auto in_next = (const char *) nullptr;
-      auto out_next = (char16_t *) nullptr;
+      auto out_next = (CharT *) nullptr;
       auto res = codecvt_base::result ();
 
       res = cvt.in (state, in, in + t.in_size, in_next, out, out + t.out_size,
@@ -972,23 +982,27 @@ utf8_to_ucs2_in_partial (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.partial);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char16_t>::compare (out, exp, t.expected_out_next)
-	      == 0);
+      VERIFY (char_traits<CharT>::compare (out, exp, t.expected_out_next) == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
     }
 }
 
+template <class CharT>
 void
-utf8_to_ucs2_in_error (const codecvt<char16_t, char, mbstate_t> &cvt)
+utf8_to_ucs2_in_error (const codecvt<CharT, char, mbstate_t> &cvt)
 {
   const char valid_in[] = "bш\uAAAA\U0010AAAA";
-  const char16_t exp[] = u"bш\uAAAA\U0010AAAA";
+  const char16_t exp_literal[] = u"bш\uAAAA\U0010AAAA";
+  CharT exp[array_size (exp_literal)] = {};
+  copy (begin (exp_literal), end (exp_literal), begin (exp));
 
   static_assert (array_size (valid_in) == 11, "");
+  static_assert (array_size (exp_literal) == 6, "");
   static_assert (array_size (exp) == 6, "");
   VERIFY (char_traits<char>::length (valid_in) == 10);
-  VERIFY (char_traits<char16_t>::length (exp) == 5);
+  VERIFY (char_traits<char16_t>::length (exp_literal) == 5);
+  VERIFY (char_traits<CharT>::length (exp) == 5);
 
   test_offsets_error<char> offsets[] = {
 
@@ -1058,18 +1072,18 @@ utf8_to_ucs2_in_error (const codecvt<char16_t, char, mbstate_t> &cvt)
   };
   for (auto t : offsets)
     {
-      char in[10] = {};
-      char16_t out[array_size (exp) - 1] = {};
+      char in[array_size (valid_in)] = {};
+      CharT out[array_size (exp) - 1] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
-      char_traits<char>::copy (in, valid_in, t.in_size);
+      char_traits<char>::copy (in, valid_in, array_size (valid_in));
       in[t.replace_pos] = t.replace_char;
 
       auto state = mbstate_t{};
       auto in_next = (const char *) nullptr;
-      auto out_next = (char16_t *) nullptr;
+      auto out_next = (CharT *) nullptr;
       auto res = codecvt_base::result ();
 
       res = cvt.in (state, in, in + t.in_size, in_next, out, out + t.out_size,
@@ -1077,21 +1091,31 @@ utf8_to_ucs2_in_error (const codecvt<char16_t, char, mbstate_t> &cvt)
       VERIFY (res == cvt.error);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char16_t>::compare (out, exp, t.expected_out_next)
-	      == 0);
+      VERIFY (char_traits<CharT>::compare (out, exp, t.expected_out_next) == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
     }
+}
+
+template <class CharT>
+void
+utf8_to_ucs2_in (const codecvt<CharT, char, mbstate_t> &cvt)
+{
+  utf8_to_ucs2_in_ok (cvt);
+  utf8_to_ucs2_in_partial (cvt);
+  utf8_to_ucs2_in_error (cvt);
 }
 
 void
 utf8_to_ucs2_in ()
 {
   auto cvt_ptr = to_unique_ptr (new codecvt_utf8<char16_t> ());
+  utf8_to_ucs2_in (*cvt_ptr);
 
-  utf8_to_ucs2_in_ok (*cvt_ptr);
-  utf8_to_ucs2_in_partial (*cvt_ptr);
-  utf8_to_ucs2_in_error (*cvt_ptr);
+#if _WIN32 || (__GNUC__ && __SIZEOF_WCHAR_T__ == 2)
+  auto cvt_ptr2 = to_unique_ptr (new codecvt_utf8<wchar_t> ());
+  utf8_to_ucs2_in (*cvt_ptr2);
+#endif
 }
 
 void
