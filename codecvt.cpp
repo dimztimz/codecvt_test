@@ -668,25 +668,6 @@ utf8_to_utf16_in (const codecvt<CharT, char, mbstate_t> &cvt)
   utf8_to_utf16_in_error (cvt);
 }
 
-void
-utf8_to_utf16_in ()
-{
-  auto &cvt
-    = use_facet<codecvt<char16_t, char, mbstate_t>> (locale::classic ());
-  utf8_to_utf16_in (cvt);
-
-  auto cvt_ptr = to_unique_ptr (new codecvt_utf8_utf16<char16_t> ());
-  utf8_to_utf16_in (*cvt_ptr);
-
-  auto cvt_ptr2 = to_unique_ptr(new codecvt_utf8_utf16<char32_t>());
-  utf8_to_utf16_in(*cvt_ptr2);
-
-#if _WIN32 || (__GNUC__ && __SIZEOF_WCHAR_T__ >= 2)
-  auto cvt_ptr3 = to_unique_ptr(new codecvt_utf8_utf16<wchar_t>());
-  utf8_to_utf16_in(*cvt_ptr3);
-#endif
-}
-
 template <class CharT>
 void
 utf16_to_utf8_out_ok (const codecvt<CharT, char, mbstate_t> &cvt)
@@ -867,22 +848,30 @@ utf16_to_utf8_out (const codecvt<CharT, char, mbstate_t> &cvt)
   utf16_to_utf8_out_error (cvt);
 }
 
+template <class CharT>
 void
-utf16_to_utf8_out ()
+test_utf8_utf16_cvts (const codecvt<CharT, char, mbstate_t> &cvt)
+{
+  utf8_to_utf16_in (cvt);
+  utf16_to_utf8_out (cvt);
+}
+
+void
+test_utf8_utf16_cvts ()
 {
   auto &cvt
     = use_facet<codecvt<char16_t, char, mbstate_t>> (locale::classic ());
-  utf16_to_utf8_out (cvt);
+  test_utf8_utf16_cvts (cvt);
 
   auto cvt_ptr = to_unique_ptr (new codecvt_utf8_utf16<char16_t> ());
-  utf16_to_utf8_out (*cvt_ptr);
+  test_utf8_utf16_cvts (*cvt_ptr);
 
-  auto cvt_ptr2 = to_unique_ptr(new codecvt_utf8_utf16<char32_t>());
-  utf16_to_utf8_out(*cvt_ptr2);
+  auto cvt_ptr2 = to_unique_ptr (new codecvt_utf8_utf16<char32_t> ());
+  test_utf8_utf16_cvts (*cvt_ptr2);
 
 #if _WIN32 || (__GNUC__ && __SIZEOF_WCHAR_T__ >= 2)
-  auto cvt_ptr3 = to_unique_ptr(new codecvt_utf8_utf16<wchar_t>());
-  utf16_to_utf8_out(*cvt_ptr3);
+  auto cvt_ptr3 = to_unique_ptr (new codecvt_utf8_utf16<wchar_t> ());
+  test_utf8_utf16_cvts (*cvt_ptr3);
 #endif
 }
 
@@ -1382,8 +1371,7 @@ main ()
 {
   test_utf8_utf32_codecvts ();
 
-  utf8_to_utf16_in ();
-  utf16_to_utf8_out ();
+  test_utf8_utf16_cvts ();
 
   utf8_to_ucs2_in ();
   ucs2_to_utf8_out ();
