@@ -450,7 +450,7 @@ utf8_to_utf16_in_ok (const codecvt<CharT, char, mbstate_t> &cvt)
   const char in[] = "bш\uAAAA\U0010AAAA";
   const char16_t exp_literal[] = u"bш\uAAAA\U0010AAAA";
   CharT exp[array_size(exp_literal)] = {};
-  copy(begin(exp_literal), end(exp_literal), begin(exp));
+  copy (begin (exp_literal), end (exp_literal), begin (exp));
 
   static_assert (array_size (in) == 11, "");
   static_assert (array_size (exp_literal) == 6, "");
@@ -509,7 +509,7 @@ utf8_to_utf16_in_partial (const codecvt<CharT, char, mbstate_t> &cvt)
   const char in[] = "bш\uAAAA\U0010AAAA";
   const char16_t exp_literal[] = u"bш\uAAAA\U0010AAAA";
   CharT exp[array_size(exp_literal)] = {};
-  copy(begin(exp_literal), end(exp_literal), begin(exp));
+  copy (begin (exp_literal), end (exp_literal), begin (exp));
 
   static_assert (array_size (in) == 11, "");
   static_assert (array_size (exp_literal) == 6, "");
@@ -576,7 +576,7 @@ utf8_to_utf16_in_error (const codecvt<CharT, char, mbstate_t> &cvt)
   const char valid_in[] = "bш\uAAAA\U0010AAAA";
   const char16_t exp_literal[] = u"bш\uAAAA\U0010AAAA";
   CharT exp[array_size(exp_literal)] = {};
-  copy(begin(exp_literal), end(exp_literal), begin(exp));
+  copy (begin (exp_literal), end (exp_literal), begin (exp));
 
   static_assert (array_size (valid_in) == 11, "");
   static_assert (array_size (exp_literal) == 6, "");
@@ -676,7 +676,7 @@ utf16_to_utf8_out_ok (const codecvt<CharT, char, mbstate_t> &cvt)
   const char16_t in_literal[] = u"bш\uAAAA\U0010AAAA";
   const char exp[] = "bш\uAAAA\U0010AAAA";
   CharT in[array_size(in_literal)];
-  copy(begin(in_literal), end(in_literal), begin(in));
+  copy (begin (in_literal), end (in_literal), begin (in));
 
   static_assert (array_size (in_literal) == 6, "");
   static_assert (array_size (exp) == 11, "");
@@ -715,7 +715,7 @@ utf16_to_utf8_out_partial (const codecvt<CharT, char, mbstate_t> &cvt)
   const char16_t in_literal[] = u"bш\uAAAA\U0010AAAA";
   const char exp[] = "bш\uAAAA\U0010AAAA";
   CharT in[array_size(in_literal)];
-  copy(begin(in_literal), end(in_literal), begin(in));
+  copy (begin (in_literal), end (in_literal), begin (in));
 
   static_assert (array_size (in_literal) == 6, "");
   static_assert (array_size (exp) == 11, "");
@@ -770,8 +770,7 @@ utf16_to_utf8_out_partial (const codecvt<CharT, char, mbstate_t> &cvt)
     }
 }
 
-template<class CharT>
-
+template <class CharT>
 void
 utf16_to_utf8_out_error (const codecvt<CharT, char, mbstate_t> &cvt)
 {
@@ -1106,18 +1105,6 @@ utf8_to_ucs2_in (const codecvt<CharT, char, mbstate_t> &cvt)
   utf8_to_ucs2_in_error (cvt);
 }
 
-void
-utf8_to_ucs2_in ()
-{
-  auto cvt_ptr = to_unique_ptr (new codecvt_utf8<char16_t> ());
-  utf8_to_ucs2_in (*cvt_ptr);
-
-#if _WIN32 || (__GNUC__ && __SIZEOF_WCHAR_T__ == 2)
-  auto cvt_ptr2 = to_unique_ptr (new codecvt_utf8<wchar_t> ());
-  utf8_to_ucs2_in (*cvt_ptr2);
-#endif
-}
-
 template <class CharT>
 void
 ucs2_to_utf8_out_ok (const codecvt<CharT, char, mbstate_t> &cvt)
@@ -1298,15 +1285,23 @@ ucs2_to_utf8_out (const codecvt<CharT, char, mbstate_t> &cvt)
   ucs2_to_utf8_out_error (cvt);
 }
 
+template <class CharT>
 void
-ucs2_to_utf8_out ()
+test_utf8_ucs2_cvts (const codecvt<CharT, char, mbstate_t> &cvt)
+{
+  utf8_to_ucs2_in (cvt);
+  ucs2_to_utf8_out (cvt);
+}
+
+void
+test_utf8_ucs2_cvts ()
 {
   auto cvt_ptr = to_unique_ptr (new codecvt_utf8<char16_t> ());
-  ucs2_to_utf8_out (*cvt_ptr);
+  test_utf8_ucs2_cvts (*cvt_ptr);
 
 #if _WIN32 || (__GNUC__ && __SIZEOF_WCHAR_T__ == 2)
   auto cvt_ptr2 = to_unique_ptr (new codecvt_utf8<wchar_t> ());
-  ucs2_to_utf8_out (*cvt_ptr2);
+  test_utf8_ucs2_cvts (*cvt_ptr2);
 #endif
 }
 
@@ -1314,10 +1309,7 @@ int
 main ()
 {
   test_utf8_utf32_codecvts ();
-
   test_utf8_utf16_cvts ();
-
-  utf8_to_ucs2_in ();
-  ucs2_to_utf8_out ();
+  test_utf8_ucs2_cvts ();
   return global_error;
 }
