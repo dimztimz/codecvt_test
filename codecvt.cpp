@@ -48,16 +48,16 @@ utf8_to_utf32_in_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const ExternT in[] = "bш\uAAAA\U0010AAAA";
-  const char32_t exp_literal[] = U"bш\uAAAA\U0010AAAA";
-  InternT exp[array_size (exp_literal)] = {};
-  std::copy (begin (exp_literal), end (exp_literal), begin (exp));
+  const unsigned char input[] = "bш\uAAAA\U0010AAAA";
+  const char32_t expected[] = U"bш\uAAAA\U0010AAAA";
+  static_assert (array_size (input) == 11, "");
+  static_assert (array_size (expected) == 5, "");
 
-  static_assert (array_size (in) == 11, "");
-  static_assert (array_size (exp_literal) == 5, "");
-  static_assert (array_size (exp) == 5, "");
+  ExternT in[array_size (input)];
+  InternT exp[array_size (expected)];
+  copy (begin (input), end (input), begin (in));
+  copy (begin (expected), end (expected), begin (exp));
   VERIFY (char_traits<ExternT>::length (in) == 10);
-  VERIFY (char_traits<char32_t>::length (exp_literal) == 4);
   VERIFY (char_traits<InternT>::length (exp) == 4);
 
   test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {3, 2}, {6, 3}, {10, 4}};
@@ -108,16 +108,16 @@ utf8_to_utf32_in_partial (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const ExternT in[] = "bш\uAAAA\U0010AAAA";
-  const char32_t exp_literal[] = U"bш\uAAAA\U0010AAAA";
-  InternT exp[array_size (exp_literal)] = {};
-  std::copy (begin (exp_literal), end (exp_literal), begin (exp));
+  const unsigned char input[] = "bш\uAAAA\U0010AAAA";
+  const char32_t expected[] = U"bш\uAAAA\U0010AAAA";
+  static_assert (array_size (input) == 11, "");
+  static_assert (array_size (expected) == 5, "");
 
-  static_assert (array_size (in) == 11, "");
-  static_assert (array_size (exp_literal) == 5, "");
-  static_assert (array_size (exp) == 5, "");
+  ExternT in[array_size (input)];
+  InternT exp[array_size (expected)];
+  copy (begin (input), end (input), begin (in));
+  copy (begin (expected), end (expected), begin (exp));
   VERIFY (char_traits<ExternT>::length (in) == 10);
-  VERIFY (char_traits<char32_t>::length (exp_literal) == 4);
   VERIFY (char_traits<InternT>::length (exp) == 4);
 
   test_offsets_partial offsets[] = {
@@ -172,16 +172,16 @@ utf8_to_utf32_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const ExternT valid_in[] = "bш\uAAAA\U0010AAAA";
-  const char32_t exp_literal[] = U"bш\uAAAA\U0010AAAA";
-  InternT exp[array_size (exp_literal)] = {};
-  std::copy (begin (exp_literal), end (exp_literal), begin (exp));
+  const unsigned char input[] = "bш\uAAAA\U0010AAAA";
+  const char32_t expected[] = U"bш\uAAAA\U0010AAAA";
+  static_assert (array_size (input) == 11, "");
+  static_assert (array_size (expected) == 5, "");
 
-  static_assert (array_size (valid_in) == 11, "");
-  static_assert (array_size (exp_literal) == 5, "");
-  static_assert (array_size (exp) == 5, "");
-  VERIFY (char_traits<ExternT>::length (valid_in) == 10);
-  VERIFY (char_traits<char32_t>::length (exp_literal) == 4);
+  ExternT in[array_size (input)];
+  InternT exp[array_size (expected)];
+  copy (begin (input), end (input), begin (in));
+  copy (begin (expected), end (expected), begin (exp));
+  VERIFY (char_traits<ExternT>::length (in) == 10);
   VERIFY (char_traits<InternT>::length (exp) == 4);
 
   test_offsets_error<ExternT> offsets[] = {
@@ -232,13 +232,12 @@ utf8_to_utf32_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   };
   for (auto t : offsets)
     {
-      ExternT in[array_size (valid_in)] = {};
       InternT out[array_size (exp) - 1] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
-      char_traits<ExternT>::copy (in, valid_in, array_size (valid_in));
+      auto old_char = in[t.replace_pos];
       in[t.replace_pos] = t.replace_char;
 
       auto state = mbstate_t{};
@@ -255,6 +254,8 @@ utf8_to_utf32_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 	      == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
+
+      in[t.replace_pos] = old_char;
     }
 }
 
@@ -273,15 +274,15 @@ utf32_to_utf8_out_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const char32_t in_literal[] = U"bш\uAAAA\U0010AAAA";
-  const ExternT exp[] = "bш\uAAAA\U0010AAAA";
-  InternT in[array_size (in_literal)] = {};
-  copy (begin (in_literal), end (in_literal), begin (in));
+  const char32_t input[] = U"bш\uAAAA\U0010AAAA";
+  const unsigned char expected[] = "bш\uAAAA\U0010AAAA";
+  static_assert (array_size (input) == 5, "");
+  static_assert (array_size (expected) == 11, "");
 
-  static_assert (array_size (in_literal) == 5, "");
-  static_assert (array_size (in) == 5, "");
-  static_assert (array_size (exp) == 11, "");
-  VERIFY (char_traits<char32_t>::length (in_literal) == 4);
+  InternT in[array_size (input)];
+  ExternT exp[array_size (expected)];
+  copy (begin (input), end (input), begin (in));
+  copy (begin (expected), end (expected), begin (exp));
   VERIFY (char_traits<InternT>::length (in) == 4);
   VERIFY (char_traits<ExternT>::length (exp) == 10);
 
@@ -313,15 +314,15 @@ utf32_to_utf8_out_partial (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const char32_t in_literal[] = U"bш\uAAAA\U0010AAAA";
-  const ExternT exp[] = "bш\uAAAA\U0010AAAA";
-  InternT in[array_size (in_literal)] = {};
-  copy (begin (in_literal), end (in_literal), begin (in));
+  const char32_t input[] = U"bш\uAAAA\U0010AAAA";
+  const unsigned char expected[] = "bш\uAAAA\U0010AAAA";
+  static_assert (array_size (input) == 5, "");
+  static_assert (array_size (expected) == 11, "");
 
-  static_assert (array_size (in_literal) == 5, "");
-  static_assert (array_size (in) == 5, "");
-  static_assert (array_size (exp) == 11, "");
-  VERIFY (char_traits<char32_t>::length (in_literal) == 4);
+  InternT in[array_size (input)];
+  ExternT exp[array_size (expected)];
+  copy (begin (input), end (input), begin (in));
+  copy (begin (expected), end (expected), begin (exp));
   VERIFY (char_traits<InternT>::length (in) == 4);
   VERIFY (char_traits<ExternT>::length (exp) == 10);
 
@@ -369,12 +370,17 @@ void
 utf32_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
-  const char32_t valid_in[] = U"bш\uAAAA\U0010AAAA";
-  const ExternT exp[] = "bш\uAAAA\U0010AAAA";
+  // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
+  const char32_t input[] = U"bш\uAAAA\U0010AAAA";
+  const unsigned char expected[] = "bш\uAAAA\U0010AAAA";
+  static_assert (array_size (input) == 5, "");
+  static_assert (array_size (expected) == 11, "");
 
-  static_assert (array_size (valid_in) == 5, "");
-  static_assert (array_size (exp) == 11, "");
-  VERIFY (char_traits<char32_t>::length (valid_in) == 4);
+  InternT in[array_size (input)];
+  ExternT exp[array_size (expected)];
+  copy (begin (input), end (input), begin (in));
+  copy (begin (expected), end (expected), begin (exp));
+  VERIFY (char_traits<InternT>::length (in) == 4);
   VERIFY (char_traits<ExternT>::length (exp) == 10);
 
   test_offsets_error<InternT> offsets[] = {{4, 10, 0, 0, 0x00110000, 0},
@@ -384,13 +390,12 @@ utf32_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
   for (auto t : offsets)
     {
-      InternT in[array_size (valid_in)] = {};
       ExternT out[array_size (exp) - 1] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
-      copy (begin (valid_in), end (valid_in), begin (in));
+      auto old_char = in[t.replace_pos];
       in[t.replace_pos] = t.replace_char;
 
       auto state = mbstate_t{};
@@ -407,6 +412,8 @@ utf32_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 	      == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
+
+      in[t.replace_pos] = old_char;
     }
 }
 
@@ -433,16 +440,16 @@ utf8_to_utf16_in_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const ExternT in[] = "bш\uAAAA\U0010AAAA";
-  const char16_t exp_literal[] = u"bш\uAAAA\U0010AAAA";
-  InternT exp[array_size (exp_literal)] = {};
-  copy (begin (exp_literal), end (exp_literal), begin (exp));
+  const unsigned char input[] = "bш\uAAAA\U0010AAAA";
+  const char16_t expected[] = u"bш\uAAAA\U0010AAAA";
+  static_assert (array_size (input) == 11, "");
+  static_assert (array_size (expected) == 6, "");
 
-  static_assert (array_size (in) == 11, "");
-  static_assert (array_size (exp_literal) == 6, "");
-  static_assert (array_size (exp) == 6, "");
+  ExternT in[array_size (input)];
+  InternT exp[array_size (expected)];
+  copy (begin (input), end (input), begin (in));
+  copy (begin (expected), end (expected), begin (exp));
   VERIFY (char_traits<ExternT>::length (in) == 10);
-  VERIFY (char_traits<char16_t>::length (exp_literal) == 5);
   VERIFY (char_traits<InternT>::length (exp) == 5);
 
   test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {3, 2}, {6, 3}, {10, 5}};
@@ -493,16 +500,16 @@ utf8_to_utf16_in_partial (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const ExternT in[] = "bш\uAAAA\U0010AAAA";
-  const char16_t exp_literal[] = u"bш\uAAAA\U0010AAAA";
-  InternT exp[array_size (exp_literal)] = {};
-  copy (begin (exp_literal), end (exp_literal), begin (exp));
+  const unsigned char input[] = "bш\uAAAA\U0010AAAA";
+  const char16_t expected[] = u"bш\uAAAA\U0010AAAA";
+  static_assert (array_size (input) == 11, "");
+  static_assert (array_size (expected) == 6, "");
 
-  static_assert (array_size (in) == 11, "");
-  static_assert (array_size (exp_literal) == 6, "");
-  static_assert (array_size (exp) == 6, "");
+  ExternT in[array_size (input)];
+  InternT exp[array_size (expected)];
+  copy (begin (input), end (input), begin (in));
+  copy (begin (expected), end (expected), begin (exp));
   VERIFY (char_traits<ExternT>::length (in) == 10);
-  VERIFY (char_traits<char16_t>::length (exp_literal) == 5);
   VERIFY (char_traits<InternT>::length (exp) == 5);
 
   test_offsets_partial offsets[] = {
@@ -561,16 +568,17 @@ void
 utf8_to_utf16_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
-  const ExternT valid_in[] = "bш\uAAAA\U0010AAAA";
-  const char16_t exp_literal[] = u"bш\uAAAA\U0010AAAA";
-  InternT exp[array_size (exp_literal)] = {};
-  copy (begin (exp_literal), end (exp_literal), begin (exp));
+  // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
+  const unsigned char input[] = "bш\uAAAA\U0010AAAA";
+  const char16_t expected[] = u"bш\uAAAA\U0010AAAA";
+  static_assert (array_size (input) == 11, "");
+  static_assert (array_size (expected) == 6, "");
 
-  static_assert (array_size (valid_in) == 11, "");
-  static_assert (array_size (exp_literal) == 6, "");
-  static_assert (array_size (exp) == 6, "");
-  VERIFY (char_traits<ExternT>::length (valid_in) == 10);
-  VERIFY (char_traits<char16_t>::length (exp_literal) == 5);
+  ExternT in[array_size (input)];
+  InternT exp[array_size (expected)];
+  copy (begin (input), end (input), begin (in));
+  copy (begin (expected), end (expected), begin (exp));
+  VERIFY (char_traits<ExternT>::length (in) == 10);
   VERIFY (char_traits<InternT>::length (exp) == 5);
 
   test_offsets_error<ExternT> offsets[] = {
@@ -621,13 +629,12 @@ utf8_to_utf16_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   };
   for (auto t : offsets)
     {
-      ExternT in[array_size (valid_in)] = {};
       InternT out[array_size (exp) - 1] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
-      char_traits<ExternT>::copy (in, valid_in, array_size (valid_in));
+      auto old_char = in[t.replace_pos];
       in[t.replace_pos] = t.replace_char;
 
       auto state = mbstate_t{};
@@ -644,6 +651,8 @@ utf8_to_utf16_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 	      == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
+
+      in[t.replace_pos] = old_char;
     }
 }
 
@@ -662,17 +671,17 @@ utf16_to_utf8_out_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const char16_t in_literal[] = u"bш\uAAAA\U0010AAAA";
-  const ExternT exp[] = "bш\uAAAA\U0010AAAA";
-  InternT in[array_size (in_literal)];
-  copy (begin (in_literal), end (in_literal), begin (in));
+  const char16_t input[] = u"bш\uAAAA\U0010AAAA";
+  const unsigned char expected[] = "bш\uAAAA\U0010AAAA";
+  static_assert (array_size (input) == 6, "");
+  static_assert (array_size (expected) == 11, "");
 
-  static_assert (array_size (in_literal) == 6, "");
-  static_assert (array_size (exp) == 11, "");
-  static_assert (array_size (in) == 6, "");
-  VERIFY (char_traits<char16_t>::length (in_literal) == 5);
-  VERIFY (char_traits<ExternT>::length (exp) == 10);
+  InternT in[array_size (input)];
+  ExternT exp[array_size (expected)];
+  copy (begin (input), end (input), begin (in));
+  copy (begin (expected), end (expected), begin (exp));
   VERIFY (char_traits<InternT>::length (in) == 5);
+  VERIFY (char_traits<ExternT>::length (exp) == 10);
 
   const test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}, {5, 10}};
   for (auto t : offsets)
@@ -702,17 +711,17 @@ utf16_to_utf8_out_partial (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const char16_t in_literal[] = u"bш\uAAAA\U0010AAAA";
-  const ExternT exp[] = "bш\uAAAA\U0010AAAA";
-  InternT in[array_size (in_literal)];
-  copy (begin (in_literal), end (in_literal), begin (in));
+  const char16_t input[] = u"bш\uAAAA\U0010AAAA";
+  const unsigned char expected[] = "bш\uAAAA\U0010AAAA";
+  static_assert (array_size (input) == 6, "");
+  static_assert (array_size (expected) == 11, "");
 
-  static_assert (array_size (in_literal) == 6, "");
-  static_assert (array_size (exp) == 11, "");
-  static_assert (array_size (in) == 6, "");
-  VERIFY (char_traits<char16_t>::length (in_literal) == 5);
-  VERIFY (char_traits<ExternT>::length (exp) == 10);
+  InternT in[array_size (input)];
+  ExternT exp[array_size (expected)];
+  copy (begin (input), end (input), begin (in));
+  copy (begin (expected), end (expected), begin (exp));
   VERIFY (char_traits<InternT>::length (in) == 5);
+  VERIFY (char_traits<ExternT>::length (exp) == 10);
 
   const test_offsets_partial offsets[] = {
     {1, 0, 0, 0}, // no space for first CP
@@ -765,12 +774,17 @@ void
 utf16_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
-  const char16_t valid_in[] = u"bш\uAAAA\U0010AAAA";
-  const ExternT exp[] = "bш\uAAAA\U0010AAAA";
+  // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
+  const char16_t input[] = u"bш\uAAAA\U0010AAAA";
+  const unsigned char expected[] = "bш\uAAAA\U0010AAAA";
+  static_assert (array_size (input) == 6, "");
+  static_assert (array_size (expected) == 11, "");
 
-  static_assert (array_size (valid_in) == 6, "");
-  static_assert (array_size (exp) == 11, "");
-  VERIFY (char_traits<char16_t>::length (valid_in) == 5);
+  InternT in[array_size (input)];
+  ExternT exp[array_size (expected)];
+  copy (begin (input), end (input), begin (in));
+  copy (begin (expected), end (expected), begin (exp));
+  VERIFY (char_traits<InternT>::length (in) == 5);
   VERIFY (char_traits<ExternT>::length (exp) == 10);
 
   test_offsets_error<InternT> offsets[] = {
@@ -803,13 +817,12 @@ utf16_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
   for (auto t : offsets)
     {
-      InternT in[array_size (valid_in)] = {};
       ExternT out[array_size (exp) - 1] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
-      copy (begin (valid_in), end (valid_in), begin (in));
+      auto old_char = in[t.replace_pos];
       in[t.replace_pos] = t.replace_char;
 
       auto state = mbstate_t{};
@@ -826,6 +839,8 @@ utf16_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 	      == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
+
+      in[t.replace_pos] = old_char;
     }
 }
 
@@ -852,16 +867,16 @@ utf8_to_ucs2_in_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP and 3-byte CP
-  const ExternT in[] = "bш\uAAAA";
-  const char16_t exp_literal[] = u"bш\uAAAA";
-  InternT exp[array_size (exp_literal)] = {};
-  copy (begin (exp_literal), end (exp_literal), begin (exp));
+  const unsigned char input[] = "bш\uAAAA";
+  const char16_t expected[] = u"bш\uAAAA";
+  static_assert (array_size (input) == 7, "");
+  static_assert (array_size (expected) == 4, "");
 
-  static_assert (array_size (in) == 7, "");
-  static_assert (array_size (exp_literal) == 4, "");
-  static_assert (array_size (exp) == 4, "");
+  ExternT in[array_size (input)];
+  InternT exp[array_size (expected)];
+  copy (begin (input), end (input), begin (in));
+  copy (begin (expected), end (expected), begin (exp));
   VERIFY (char_traits<ExternT>::length (in) == 6);
-  VERIFY (char_traits<char16_t>::length (exp_literal) == 3);
   VERIFY (char_traits<InternT>::length (exp) == 3);
 
   test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {3, 2}, {6, 3}};
@@ -912,16 +927,16 @@ utf8_to_ucs2_in_partial (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP and 3-byte CP
-  const ExternT in[] = "bш\uAAAA";
-  const char16_t exp_literal[] = u"bш\uAAAA";
-  InternT exp[array_size (exp_literal)] = {};
-  copy (begin (exp_literal), end (exp_literal), begin (exp));
+  const unsigned char input[] = "bш\uAAAA";
+  const char16_t expected[] = u"bш\uAAAA";
+  static_assert (array_size (input) == 7, "");
+  static_assert (array_size (expected) == 4, "");
 
-  static_assert (array_size (in) == 7, "");
-  static_assert (array_size (exp_literal) == 4, "");
-  static_assert (array_size (exp) == 4, "");
+  ExternT in[array_size (input)];
+  InternT exp[array_size (expected)];
+  copy (begin (input), end (input), begin (in));
+  copy (begin (expected), end (expected), begin (exp));
   VERIFY (char_traits<ExternT>::length (in) == 6);
-  VERIFY (char_traits<char16_t>::length (exp_literal) == 3);
   VERIFY (char_traits<InternT>::length (exp) == 3);
 
   test_offsets_partial offsets[] = {
@@ -967,16 +982,16 @@ void
 utf8_to_ucs2_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
-  const ExternT valid_in[] = "bш\uAAAA\U0010AAAA";
-  const char16_t exp_literal[] = u"bш\uAAAA\U0010AAAA";
-  InternT exp[array_size (exp_literal)] = {};
-  copy (begin (exp_literal), end (exp_literal), begin (exp));
+  const unsigned char input[] = "bш\uAAAA\U0010AAAA";
+  const char16_t expected[] = u"bш\uAAAA\U0010AAAA";
+  static_assert (array_size (input) == 11, "");
+  static_assert (array_size (expected) == 6, "");
 
-  static_assert (array_size (valid_in) == 11, "");
-  static_assert (array_size (exp_literal) == 6, "");
-  static_assert (array_size (exp) == 6, "");
-  VERIFY (char_traits<ExternT>::length (valid_in) == 10);
-  VERIFY (char_traits<char16_t>::length (exp_literal) == 5);
+  ExternT in[array_size (input)];
+  InternT exp[array_size (expected)];
+  copy (begin (input), end (input), begin (in));
+  copy (begin (expected), end (expected), begin (exp));
+  VERIFY (char_traits<ExternT>::length (in) == 10);
   VERIFY (char_traits<InternT>::length (exp) == 5);
 
   test_offsets_error<ExternT> offsets[] = {
@@ -1047,13 +1062,12 @@ utf8_to_ucs2_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   };
   for (auto t : offsets)
     {
-      ExternT in[array_size (valid_in)] = {};
       InternT out[array_size (exp) - 1] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
-      char_traits<ExternT>::copy (in, valid_in, array_size (valid_in));
+      auto old_char = in[t.replace_pos];
       in[t.replace_pos] = t.replace_char;
 
       auto state = mbstate_t{};
@@ -1070,6 +1084,8 @@ utf8_to_ucs2_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 	      == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
+
+      in[t.replace_pos] = old_char;
     }
 }
 
@@ -1088,17 +1104,17 @@ ucs2_to_utf8_out_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP and 3-byte CP
-  const char16_t in_literal[] = u"bш\uAAAA";
-  const ExternT exp[] = "bш\uAAAA";
-  InternT in[array_size (in_literal)] = {};
-  copy (begin (in_literal), end (in_literal), begin (in));
+  const char16_t input[] = u"bш\uAAAA";
+  const unsigned char expected[] = "bш\uAAAA";
+  static_assert (array_size (input) == 4, "");
+  static_assert (array_size (expected) == 7, "");
 
-  static_assert (array_size (in_literal) == 4, "");
-  static_assert (array_size (exp) == 7, "");
-  static_assert (array_size (in) == 4, "");
-  VERIFY (char_traits<char16_t>::length (in_literal) == 3);
-  VERIFY (char_traits<ExternT>::length (exp) == 6);
+  InternT in[array_size (input)];
+  ExternT exp[array_size (expected)];
+  copy (begin (input), end (input), begin (in));
+  copy (begin (expected), end (expected), begin (exp));
   VERIFY (char_traits<InternT>::length (in) == 3);
+  VERIFY (char_traits<ExternT>::length (exp) == 6);
 
   const test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}};
   for (auto t : offsets)
@@ -1128,17 +1144,17 @@ ucs2_to_utf8_out_partial (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP and 3-byte CP
-  const char16_t in_literal[] = u"bш\uAAAA";
-  const ExternT exp[] = "bш\uAAAA";
-  InternT in[array_size (in_literal)] = {};
-  copy (begin (in_literal), end (in_literal), begin (in));
+  const char16_t input[] = u"bш\uAAAA";
+  const unsigned char expected[] = "bш\uAAAA";
+  static_assert (array_size (input) == 4, "");
+  static_assert (array_size (expected) == 7, "");
 
-  static_assert (array_size (in_literal) == 4, "");
-  static_assert (array_size (exp) == 7, "");
-  static_assert (array_size (in) == 4, "");
-  VERIFY (char_traits<char16_t>::length (in_literal) == 3);
-  VERIFY (char_traits<ExternT>::length (exp) == 6);
+  InternT in[array_size (input)];
+  ExternT exp[array_size (expected)];
+  copy (begin (input), end (input), begin (in));
+  copy (begin (expected), end (expected), begin (exp));
   VERIFY (char_traits<InternT>::length (in) == 3);
+  VERIFY (char_traits<ExternT>::length (exp) == 6);
 
   const test_offsets_partial offsets[] = {
     {1, 0, 0, 0}, // no space for first CP
@@ -1179,12 +1195,16 @@ void
 ucs2_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
-  const char16_t valid_in[] = u"bш\uAAAA\U0010AAAA";
-  const ExternT exp[] = "bш\uAAAA\U0010AAAA";
+  const char16_t input[] = u"bш\uAAAA\U0010AAAA";
+  const unsigned char expected[] = "bш\uAAAA\U0010AAAA";
+  static_assert (array_size (input) == 6, "");
+  static_assert (array_size (expected) == 11, "");
 
-  static_assert (array_size (valid_in) == 6, "");
-  static_assert (array_size (exp) == 11, "");
-  VERIFY (char_traits<char16_t>::length (valid_in) == 5);
+  InternT in[array_size (input)];
+  ExternT exp[array_size (expected)];
+  copy (begin (input), end (input), begin (in));
+  copy (begin (expected), end (expected), begin (exp));
+  VERIFY (char_traits<InternT>::length (in) == 5);
   VERIFY (char_traits<ExternT>::length (exp) == 10);
 
   test_offsets_error<InternT> offsets[] = {
@@ -1230,13 +1250,12 @@ ucs2_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
   for (auto t : offsets)
     {
-      InternT in[array_size (valid_in)] = {};
       ExternT out[array_size (exp) - 1] = {};
       VERIFY (t.in_size <= array_size (in));
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
-      copy (begin (valid_in), end (valid_in), begin (in));
+      auto old_char = in[t.replace_pos];
       in[t.replace_pos] = t.replace_char;
 
       auto state = mbstate_t{};
@@ -1253,6 +1272,8 @@ ucs2_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 	      == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
+
+      in[t.replace_pos] = old_char;
     }
 }
 
