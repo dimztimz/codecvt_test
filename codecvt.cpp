@@ -20,15 +20,6 @@ bool global_error = false;
     }                                                                          \
   while (0)
 
-using namespace std;
-
-template <typename T>
-std::unique_ptr<T>
-to_unique_ptr (T *ptr)
-{
-  return std::unique_ptr<T> (ptr);
-}
-
 struct test_offsets_ok
 {
   size_t in_size, out_size;
@@ -53,8 +44,9 @@ auto constexpr array_size (const T (&)[N]) -> size_t
 
 template <class CharT>
 void
-utf8_to_utf32_in_ok (const codecvt<CharT, char, mbstate_t> &cvt)
+utf8_to_utf32_in_ok (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
+  using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
   const char in[] = "bш\uAAAA\U0010AAAA";
   const char32_t exp_literal[] = U"bш\uAAAA\U0010AAAA";
@@ -112,8 +104,9 @@ utf8_to_utf32_in_ok (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-utf8_to_utf32_in_partial (const codecvt<CharT, char, mbstate_t> &cvt)
+utf8_to_utf32_in_partial (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
+  using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
   const char in[] = "bш\uAAAA\U0010AAAA";
   const char32_t exp_literal[] = U"bш\uAAAA\U0010AAAA";
@@ -174,8 +167,9 @@ utf8_to_utf32_in_partial (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-utf8_to_utf32_in_error (const codecvt<CharT, char, mbstate_t> &cvt)
+utf8_to_utf32_in_error (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
+  using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
   const char valid_in[] = "bш\uAAAA\U0010AAAA";
   const char32_t exp_literal[] = U"bш\uAAAA\U0010AAAA";
@@ -264,7 +258,7 @@ utf8_to_utf32_in_error (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-utf8_to_utf32_in (const codecvt<CharT, char, mbstate_t> &cvt)
+utf8_to_utf32_in (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
   utf8_to_utf32_in_ok (cvt);
   utf8_to_utf32_in_partial (cvt);
@@ -273,8 +267,9 @@ utf8_to_utf32_in (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-utf32_to_utf8_out_ok (const codecvt<CharT, char, mbstate_t> &cvt)
+utf32_to_utf8_out_ok (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
+  using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
   const char32_t in_literal[] = U"bш\uAAAA\U0010AAAA";
   const char exp[] = "bш\uAAAA\U0010AAAA";
@@ -312,8 +307,9 @@ utf32_to_utf8_out_ok (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-utf32_to_utf8_out_partial (const codecvt<CharT, char, mbstate_t> &cvt)
+utf32_to_utf8_out_partial (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
+  using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
   const char32_t in_literal[] = U"bш\uAAAA\U0010AAAA";
   const char exp[] = "bш\uAAAA\U0010AAAA";
@@ -367,8 +363,9 @@ utf32_to_utf8_out_partial (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-utf32_to_utf8_out_error (const codecvt<CharT, char, mbstate_t> &cvt)
+utf32_to_utf8_out_error (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
+  using namespace std;
   const char32_t valid_in[] = U"bш\uAAAA\U0010AAAA";
   const char exp[] = "bш\uAAAA\U0010AAAA";
 
@@ -411,7 +408,7 @@ utf32_to_utf8_out_error (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-utf32_to_utf8_out (const codecvt<CharT, char, mbstate_t> &cvt)
+utf32_to_utf8_out (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
   utf32_to_utf8_out_ok (cvt);
   utf32_to_utf8_out_partial (cvt);
@@ -420,36 +417,21 @@ utf32_to_utf8_out (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-test_utf8_utf32_codecvts (const codecvt<CharT, char, mbstate_t> &cvt)
+test_utf8_utf32_codecvts (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
   utf8_to_utf32_in (cvt);
   utf32_to_utf8_out (cvt);
 }
 
-void
-test_utf8_utf32_codecvts ()
-{
-  auto &cvt
-    = use_facet<codecvt<char32_t, char, mbstate_t>> (locale::classic ());
-  test_utf8_utf32_codecvts (cvt);
-
-  auto cvt_ptr = to_unique_ptr (new codecvt_utf8<char32_t> ());
-  test_utf8_utf32_codecvts (*cvt_ptr);
-
-#if __STDC_ISO_10646__ || (__GNUC__ && __SIZEOF_WCHAR_T__ == 4)
-  auto cvt_ptr2 = to_unique_ptr (new codecvt_utf8<wchar_t> ());
-  test_utf8_utf32_codecvts (*cvt_ptr2);
-#endif
-}
-
 template <class CharT>
 void
-utf8_to_utf16_in_ok (const codecvt<CharT, char, mbstate_t> &cvt)
+utf8_to_utf16_in_ok (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
+  using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
   const char in[] = "bш\uAAAA\U0010AAAA";
   const char16_t exp_literal[] = u"bш\uAAAA\U0010AAAA";
-  CharT exp[array_size(exp_literal)] = {};
+  CharT exp[array_size (exp_literal)] = {};
   copy (begin (exp_literal), end (exp_literal), begin (exp));
 
   static_assert (array_size (in) == 11, "");
@@ -503,12 +485,13 @@ utf8_to_utf16_in_ok (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-utf8_to_utf16_in_partial (const codecvt<CharT, char, mbstate_t> &cvt)
+utf8_to_utf16_in_partial (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
+  using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
   const char in[] = "bш\uAAAA\U0010AAAA";
   const char16_t exp_literal[] = u"bш\uAAAA\U0010AAAA";
-  CharT exp[array_size(exp_literal)] = {};
+  CharT exp[array_size (exp_literal)] = {};
   copy (begin (exp_literal), end (exp_literal), begin (exp));
 
   static_assert (array_size (in) == 11, "");
@@ -562,8 +545,7 @@ utf8_to_utf16_in_partial (const codecvt<CharT, char, mbstate_t> &cvt)
       VERIFY (res == cvt.partial);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<CharT>::compare (out, exp, t.expected_out_next)
-	      == 0);
+      VERIFY (char_traits<CharT>::compare (out, exp, t.expected_out_next) == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
     }
@@ -571,11 +553,12 @@ utf8_to_utf16_in_partial (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-utf8_to_utf16_in_error (const codecvt<CharT, char, mbstate_t> &cvt)
+utf8_to_utf16_in_error (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
+  using namespace std;
   const char valid_in[] = "bш\uAAAA\U0010AAAA";
   const char16_t exp_literal[] = u"bш\uAAAA\U0010AAAA";
-  CharT exp[array_size(exp_literal)] = {};
+  CharT exp[array_size (exp_literal)] = {};
   copy (begin (exp_literal), end (exp_literal), begin (exp));
 
   static_assert (array_size (valid_in) == 11, "");
@@ -652,8 +635,7 @@ utf8_to_utf16_in_error (const codecvt<CharT, char, mbstate_t> &cvt)
       VERIFY (res == cvt.error);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<CharT>::compare (out, exp, t.expected_out_next)
-	      == 0);
+      VERIFY (char_traits<CharT>::compare (out, exp, t.expected_out_next) == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
     }
@@ -661,7 +643,7 @@ utf8_to_utf16_in_error (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-utf8_to_utf16_in (const codecvt<CharT, char, mbstate_t> &cvt)
+utf8_to_utf16_in (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
   utf8_to_utf16_in_ok (cvt);
   utf8_to_utf16_in_partial (cvt);
@@ -670,12 +652,13 @@ utf8_to_utf16_in (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-utf16_to_utf8_out_ok (const codecvt<CharT, char, mbstate_t> &cvt)
+utf16_to_utf8_out_ok (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
+  using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
   const char16_t in_literal[] = u"bш\uAAAA\U0010AAAA";
   const char exp[] = "bш\uAAAA\U0010AAAA";
-  CharT in[array_size(in_literal)];
+  CharT in[array_size (in_literal)];
   copy (begin (in_literal), end (in_literal), begin (in));
 
   static_assert (array_size (in_literal) == 6, "");
@@ -709,12 +692,13 @@ utf16_to_utf8_out_ok (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-utf16_to_utf8_out_partial (const codecvt<CharT, char, mbstate_t> &cvt)
+utf16_to_utf8_out_partial (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
+  using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
   const char16_t in_literal[] = u"bш\uAAAA\U0010AAAA";
   const char exp[] = "bш\uAAAA\U0010AAAA";
-  CharT in[array_size(in_literal)];
+  CharT in[array_size (in_literal)];
   copy (begin (in_literal), end (in_literal), begin (in));
 
   static_assert (array_size (in_literal) == 6, "");
@@ -763,8 +747,7 @@ utf16_to_utf8_out_partial (const codecvt<CharT, char, mbstate_t> &cvt)
       VERIFY (res == cvt.partial);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char>::compare (out, exp, t.expected_out_next)
-	      == 0);
+      VERIFY (char_traits<char>::compare (out, exp, t.expected_out_next) == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
     }
@@ -772,8 +755,9 @@ utf16_to_utf8_out_partial (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-utf16_to_utf8_out_error (const codecvt<CharT, char, mbstate_t> &cvt)
+utf16_to_utf8_out_error (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
+  using namespace std;
   const char16_t valid_in[] = u"bш\uAAAA\U0010AAAA";
   const char exp[] = "bш\uAAAA\U0010AAAA";
 
@@ -818,7 +802,7 @@ utf16_to_utf8_out_error (const codecvt<CharT, char, mbstate_t> &cvt)
       VERIFY (t.out_size <= array_size (out));
       VERIFY (t.expected_in_next <= t.in_size);
       VERIFY (t.expected_out_next <= t.out_size);
-      copy(begin(valid_in), end(valid_in), begin(in));
+      copy (begin (valid_in), end (valid_in), begin (in));
       in[t.replace_pos] = t.replace_char;
 
       auto state = mbstate_t{};
@@ -831,16 +815,15 @@ utf16_to_utf8_out_error (const codecvt<CharT, char, mbstate_t> &cvt)
       VERIFY (res == cvt.error);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char>::compare (out, exp, t.expected_out_next)
-	      == 0);
+      VERIFY (char_traits<char>::compare (out, exp, t.expected_out_next) == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
     }
 }
 
-template<class CharT>
+template <class CharT>
 void
-utf16_to_utf8_out (const codecvt<CharT, char, mbstate_t> &cvt)
+utf16_to_utf8_out (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
   utf16_to_utf8_out_ok (cvt);
   utf16_to_utf8_out_partial (cvt);
@@ -849,35 +832,17 @@ utf16_to_utf8_out (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-test_utf8_utf16_cvts (const codecvt<CharT, char, mbstate_t> &cvt)
+test_utf8_utf16_cvts (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
   utf8_to_utf16_in (cvt);
   utf16_to_utf8_out (cvt);
 }
 
-void
-test_utf8_utf16_cvts ()
-{
-  auto &cvt
-    = use_facet<codecvt<char16_t, char, mbstate_t>> (locale::classic ());
-  test_utf8_utf16_cvts (cvt);
-
-  auto cvt_ptr = to_unique_ptr (new codecvt_utf8_utf16<char16_t> ());
-  test_utf8_utf16_cvts (*cvt_ptr);
-
-  auto cvt_ptr2 = to_unique_ptr (new codecvt_utf8_utf16<char32_t> ());
-  test_utf8_utf16_cvts (*cvt_ptr2);
-
-#if _WIN32 || (__GNUC__ && __SIZEOF_WCHAR_T__ >= 2)
-  auto cvt_ptr3 = to_unique_ptr (new codecvt_utf8_utf16<wchar_t> ());
-  test_utf8_utf16_cvts (*cvt_ptr3);
-#endif
-}
-
 template <class CharT>
 void
-utf8_to_ucs2_in_ok (const codecvt<CharT, char, mbstate_t> &cvt)
+utf8_to_ucs2_in_ok (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
+  using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP and 3-byte CP
   const char in[] = "bш\uAAAA";
   const char16_t exp_literal[] = u"bш\uAAAA";
@@ -935,8 +900,9 @@ utf8_to_ucs2_in_ok (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-utf8_to_ucs2_in_partial (const codecvt<CharT, char, mbstate_t> &cvt)
+utf8_to_ucs2_in_partial (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
+  using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP and 3-byte CP
   const char in[] = "bш\uAAAA";
   const char16_t exp_literal[] = u"bш\uAAAA";
@@ -989,8 +955,9 @@ utf8_to_ucs2_in_partial (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-utf8_to_ucs2_in_error (const codecvt<CharT, char, mbstate_t> &cvt)
+utf8_to_ucs2_in_error (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
+  using namespace std;
   const char valid_in[] = "bш\uAAAA\U0010AAAA";
   const char16_t exp_literal[] = u"bш\uAAAA\U0010AAAA";
   CharT exp[array_size (exp_literal)] = {};
@@ -1098,7 +1065,7 @@ utf8_to_ucs2_in_error (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-utf8_to_ucs2_in (const codecvt<CharT, char, mbstate_t> &cvt)
+utf8_to_ucs2_in (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
   utf8_to_ucs2_in_ok (cvt);
   utf8_to_ucs2_in_partial (cvt);
@@ -1107,8 +1074,9 @@ utf8_to_ucs2_in (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-ucs2_to_utf8_out_ok (const codecvt<CharT, char, mbstate_t> &cvt)
+ucs2_to_utf8_out_ok (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
+  using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP and 3-byte CP
   const char16_t in_literal[] = u"bш\uAAAA";
   const char exp[] = "bш\uAAAA";
@@ -1146,8 +1114,9 @@ ucs2_to_utf8_out_ok (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-ucs2_to_utf8_out_partial (const codecvt<CharT, char, mbstate_t> &cvt)
+ucs2_to_utf8_out_partial (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
+  using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP and 3-byte CP
   const char16_t in_literal[] = u"bш\uAAAA";
   const char exp[] = "bш\uAAAA";
@@ -1188,8 +1157,7 @@ ucs2_to_utf8_out_partial (const codecvt<CharT, char, mbstate_t> &cvt)
       VERIFY (res == cvt.partial);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char>::compare (out, exp, t.expected_out_next)
-	      == 0);
+      VERIFY (char_traits<char>::compare (out, exp, t.expected_out_next) == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
     }
@@ -1197,8 +1165,9 @@ ucs2_to_utf8_out_partial (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-ucs2_to_utf8_out_error (const codecvt<CharT, char, mbstate_t> &cvt)
+ucs2_to_utf8_out_error (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
+  using namespace std;
   const char16_t valid_in[] = u"bш\uAAAA\U0010AAAA";
   const char exp[] = "bш\uAAAA\U0010AAAA";
 
@@ -1269,8 +1238,7 @@ ucs2_to_utf8_out_error (const codecvt<CharT, char, mbstate_t> &cvt)
       VERIFY (res == cvt.error);
       VERIFY (in_next == in + t.expected_in_next);
       VERIFY (out_next == out + t.expected_out_next);
-      VERIFY (char_traits<char>::compare (out, exp, t.expected_out_next)
-	      == 0);
+      VERIFY (char_traits<char>::compare (out, exp, t.expected_out_next) == 0);
       if (t.expected_out_next < array_size (out))
 	VERIFY (out[t.expected_out_next] == 0);
     }
@@ -1278,7 +1246,7 @@ ucs2_to_utf8_out_error (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-ucs2_to_utf8_out (const codecvt<CharT, char, mbstate_t> &cvt)
+ucs2_to_utf8_out (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
   ucs2_to_utf8_out_ok (cvt);
   ucs2_to_utf8_out_partial (cvt);
@@ -1287,29 +1255,67 @@ ucs2_to_utf8_out (const codecvt<CharT, char, mbstate_t> &cvt)
 
 template <class CharT>
 void
-test_utf8_ucs2_cvts (const codecvt<CharT, char, mbstate_t> &cvt)
+test_utf8_ucs2_cvts (const std::codecvt<CharT, char, mbstate_t> &cvt)
 {
   utf8_to_ucs2_in (cvt);
   ucs2_to_utf8_out (cvt);
 }
 
-void
-test_utf8_ucs2_cvts ()
-{
-  auto cvt_ptr = to_unique_ptr (new codecvt_utf8<char16_t> ());
-  test_utf8_ucs2_cvts (*cvt_ptr);
+using namespace std;
 
-#if _WIN32 || (__GNUC__ && __SIZEOF_WCHAR_T__ == 2)
-  auto cvt_ptr2 = to_unique_ptr (new codecvt_utf8<wchar_t> ());
-  test_utf8_ucs2_cvts (*cvt_ptr2);
+void
+test_utf8_utf32_codecvts ()
+{
+  using codecvt_c32 = codecvt<char32_t, char, mbstate_t>;
+  auto loc_c = locale::classic ();
+  VERIFY (has_facet<codecvt_c32> (loc_c));
+
+  auto &cvt = use_facet<codecvt_c32> (loc_c);
+  test_utf8_utf32_codecvts (cvt);
+
+  codecvt_utf8<char32_t> cvt2;
+  test_utf8_utf32_codecvts (cvt2);
+
+#if __SIZEOF_WCHAR_T__ == 4
+  codecvt_utf8<wchar_t> cvt3;
+  test_utf8_utf32_codecvts (cvt3);
 #endif
+}
+
+void
+test_utf8_utf16_codecvts ()
+{
+  using codecvt_c16 = codecvt<char16_t, char, mbstate_t>;
+  auto loc_c = locale::classic ();
+  VERIFY (has_facet<codecvt_c16> (loc_c));
+
+  auto &cvt = use_facet<codecvt_c16> (loc_c);
+  test_utf8_utf16_cvts (cvt);
+
+  codecvt_utf8_utf16<char16_t> cvt2;
+  test_utf8_utf16_cvts (cvt2);
+
+  codecvt_utf8_utf16<char32_t> cvt3;
+  test_utf8_utf16_cvts (cvt3);
+
+#if __SIZEOF_WCHAR_T__ >= 2
+  codecvt_utf8_utf16<wchar_t> cvt4;
+  test_utf8_utf16_cvts (cvt4);
+#endif
+}
+
+void
+test_utf8_ucs2_codecvts ()
+{
+  codecvt_utf8<char16_t> cvt;
+  test_utf8_ucs2_cvts (cvt);
 }
 
 int
 main ()
 {
   test_utf8_utf32_codecvts ();
-  test_utf8_utf16_cvts ();
-  test_utf8_ucs2_cvts ();
+  test_utf8_utf16_codecvts ();
+  test_utf8_ucs2_codecvts ();
   return global_error;
 }
