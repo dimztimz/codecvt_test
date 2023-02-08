@@ -184,13 +184,13 @@ utf8_to_utf32_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   VERIFY (char_traits<ExternT>::length (in) == 10);
   VERIFY (char_traits<InternT>::length (exp) == 4);
 
-  test_offsets_error<ExternT> offsets[] = {
+  test_offsets_error<unsigned char> offsets[] = {
 
     // replace leading byte with invalid byte
-    {1, 4, 0, 0, '\xFF', 0},
-    {3, 4, 1, 1, '\xFF', 1},
-    {6, 4, 3, 2, '\xFF', 3},
-    {10, 4, 6, 3, '\xFF', 6},
+    {1, 4, 0, 0, 0xFF, 0},
+    {3, 4, 1, 1, 0xFF, 1},
+    {6, 4, 3, 2, 0xFF, 3},
+    {10, 4, 6, 3, 0xFF, 6},
 
     // replace first trailing byte with ASCII byte
     {3, 4, 1, 1, 'z', 2},
@@ -198,21 +198,21 @@ utf8_to_utf32_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     {10, 4, 6, 3, 'z', 7},
 
     // replace first trailing byte with invalid byte
-    {3, 4, 1, 1, '\xFF', 2},
-    {6, 4, 3, 2, '\xFF', 4},
-    {10, 4, 6, 3, '\xFF', 7},
+    {3, 4, 1, 1, 0xFF, 2},
+    {6, 4, 3, 2, 0xFF, 4},
+    {10, 4, 6, 3, 0xFF, 7},
 
     // replace second trailing byte with ASCII byte
     {6, 4, 3, 2, 'z', 5},
     {10, 4, 6, 3, 'z', 8},
 
     // replace second trailing byte with invalid byte
-    {6, 4, 3, 2, '\xFF', 5},
-    {10, 4, 6, 3, '\xFF', 8},
+    {6, 4, 3, 2, 0xFF, 5},
+    {10, 4, 6, 3, 0xFF, 8},
 
     // replace third trailing byte
     {10, 4, 6, 3, 'z', 9},
-    {10, 4, 6, 3, '\xFF', 9},
+    {10, 4, 6, 3, 0xFF, 9},
 
     // replace first trailing byte with ASCII byte, also incomplete at end
     {5, 4, 3, 2, 'z', 4},
@@ -220,15 +220,15 @@ utf8_to_utf32_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     {9, 4, 6, 3, 'z', 7},
 
     // replace first trailing byte with invalid byte, also incomplete at end
-    {5, 4, 3, 2, '\xFF', 4},
-    {8, 4, 6, 3, '\xFF', 7},
-    {9, 4, 6, 3, '\xFF', 7},
+    {5, 4, 3, 2, 0xFF, 4},
+    {8, 4, 6, 3, 0xFF, 7},
+    {9, 4, 6, 3, 0xFF, 7},
 
     // replace second trailing byte with ASCII byte, also incomplete at end
     {9, 4, 6, 3, 'z', 8},
 
     // replace second trailing byte with invalid byte, also incomplete at end
-    {9, 4, 6, 3, '\xFF', 8},
+    {9, 4, 6, 3, 0xFF, 8},
   };
   for (auto t : offsets)
     {
@@ -428,7 +428,7 @@ utf32_to_utf8_out (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
 template <class InternT, class ExternT>
 void
-test_utf8_utf32_codecvts (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
+test_utf8_utf32_cvt (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   utf8_to_utf32_in (cvt);
   utf32_to_utf8_out (cvt);
@@ -581,13 +581,13 @@ utf8_to_utf16_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   VERIFY (char_traits<ExternT>::length (in) == 10);
   VERIFY (char_traits<InternT>::length (exp) == 5);
 
-  test_offsets_error<ExternT> offsets[] = {
+  test_offsets_error<unsigned char> offsets[] = {
 
     // replace leading byte with invalid byte
-    {1, 5, 0, 0, '\xFF', 0},
-    {3, 5, 1, 1, '\xFF', 1},
-    {6, 5, 3, 2, '\xFF', 3},
-    {10, 5, 6, 3, '\xFF', 6},
+    {1, 5, 0, 0, 0xFF, 0},
+    {3, 5, 1, 1, 0xFF, 1},
+    {6, 5, 3, 2, 0xFF, 3},
+    {10, 5, 6, 3, 0xFF, 6},
 
     // replace first trailing byte with ASCII byte
     {3, 5, 1, 1, 'z', 2},
@@ -595,21 +595,21 @@ utf8_to_utf16_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     {10, 5, 6, 3, 'z', 7},
 
     // replace first trailing byte with invalid byte
-    {3, 5, 1, 1, '\xFF', 2},
-    {6, 5, 3, 2, '\xFF', 4},
-    {10, 5, 6, 3, '\xFF', 7},
+    {3, 5, 1, 1, 0xFF, 2},
+    {6, 5, 3, 2, 0xFF, 4},
+    {10, 5, 6, 3, 0xFF, 7},
 
     // replace second trailing byte with ASCII byte
     {6, 5, 3, 2, 'z', 5},
     {10, 5, 6, 3, 'z', 8},
 
     // replace second trailing byte with invalid byte
-    {6, 5, 3, 2, '\xFF', 5},
-    {10, 5, 6, 3, '\xFF', 8},
+    {6, 5, 3, 2, 0xFF, 5},
+    {10, 5, 6, 3, 0xFF, 8},
 
     // replace third trailing byte
     {10, 5, 6, 3, 'z', 9},
-    {10, 5, 6, 3, '\xFF', 9},
+    {10, 5, 6, 3, 0xFF, 9},
 
     // replace first trailing byte with ASCII byte, also incomplete at end
     {5, 5, 3, 2, 'z', 4},
@@ -617,15 +617,15 @@ utf8_to_utf16_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     {9, 5, 6, 3, 'z', 7},
 
     // replace first trailing byte with invalid byte, also incomplete at end
-    {5, 5, 3, 2, '\xFF', 4},
-    {8, 5, 6, 3, '\xFF', 7},
-    {9, 5, 6, 3, '\xFF', 7},
+    {5, 5, 3, 2, 0xFF, 4},
+    {8, 5, 6, 3, 0xFF, 7},
+    {9, 5, 6, 3, 0xFF, 7},
 
     // replace second trailing byte with ASCII byte, also incomplete at end
     {9, 5, 6, 3, 'z', 8},
 
     // replace second trailing byte with invalid byte, also incomplete at end
-    {9, 5, 6, 3, '\xFF', 8},
+    {9, 5, 6, 3, 0xFF, 8},
   };
   for (auto t : offsets)
     {
@@ -855,7 +855,7 @@ utf16_to_utf8_out (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
 template <class InternT, class ExternT>
 void
-test_utf8_utf16_cvts (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
+test_utf8_utf16_cvt (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   utf8_to_utf16_in (cvt);
   utf16_to_utf8_out (cvt);
@@ -994,13 +994,13 @@ utf8_to_ucs2_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   VERIFY (char_traits<ExternT>::length (in) == 10);
   VERIFY (char_traits<InternT>::length (exp) == 5);
 
-  test_offsets_error<ExternT> offsets[] = {
+  test_offsets_error<unsigned char> offsets[] = {
 
     // replace leading byte with invalid byte
-    {1, 5, 0, 0, '\xFF', 0},
-    {3, 5, 1, 1, '\xFF', 1},
-    {6, 5, 3, 2, '\xFF', 3},
-    {10, 5, 6, 3, '\xFF', 6},
+    {1, 5, 0, 0, 0xFF, 0},
+    {3, 5, 1, 1, 0xFF, 1},
+    {6, 5, 3, 2, 0xFF, 3},
+    {10, 5, 6, 3, 0xFF, 6},
 
     // replace first trailing byte with ASCII byte
     {3, 5, 1, 1, 'z', 2},
@@ -1008,21 +1008,21 @@ utf8_to_ucs2_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     {10, 5, 6, 3, 'z', 7},
 
     // replace first trailing byte with invalid byte
-    {3, 5, 1, 1, '\xFF', 2},
-    {6, 5, 3, 2, '\xFF', 4},
-    {10, 5, 6, 3, '\xFF', 7},
+    {3, 5, 1, 1, 0xFF, 2},
+    {6, 5, 3, 2, 0xFF, 4},
+    {10, 5, 6, 3, 0xFF, 7},
 
     // replace second trailing byte with ASCII byte
     {6, 5, 3, 2, 'z', 5},
     {10, 5, 6, 3, 'z', 8},
 
     // replace second trailing byte with invalid byte
-    {6, 5, 3, 2, '\xFF', 5},
-    {10, 5, 6, 3, '\xFF', 8},
+    {6, 5, 3, 2, 0xFF, 5},
+    {10, 5, 6, 3, 0xFF, 8},
 
     // replace third trailing byte
     {10, 5, 6, 3, 'z', 9},
-    {10, 5, 6, 3, '\xFF', 9},
+    {10, 5, 6, 3, 0xFF, 9},
 
     // When we see a leading byte of 4-byte CP, we should return error, no
     // matter if it is incomplete at the end or has errors in the trailing
@@ -1044,21 +1044,21 @@ utf8_to_ucs2_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     {5, 5, 3, 2, 'z', 4},
 
     // replace first trailing byte with invalid byte, also incomplete at end
-    {5, 5, 3, 2, '\xFF', 4},
+    {5, 5, 3, 2, 0xFF, 4},
 
     // replace first trailing byte with ASCII byte, also incomplete at end
     {8, 5, 6, 3, 'z', 7},
     {9, 5, 6, 3, 'z', 7},
 
     // replace first trailing byte with invalid byte, also incomplete at end
-    {8, 5, 6, 3, '\xFF', 7},
-    {9, 5, 6, 3, '\xFF', 7},
+    {8, 5, 6, 3, 0xFF, 7},
+    {9, 5, 6, 3, 0xFF, 7},
 
     // replace second trailing byte with ASCII byte, also incomplete at end
     {9, 5, 6, 3, 'z', 8},
 
     // replace second trailing byte with invalid byte, also incomplete at end
-    {9, 5, 6, 3, '\xFF', 8},
+    {9, 5, 6, 3, 0xFF, 8},
   };
   for (auto t : offsets)
     {
@@ -1288,7 +1288,7 @@ ucs2_to_utf8_out (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
 template <class InternT, class ExternT>
 void
-test_utf8_ucs2_cvts (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
+test_utf8_ucs2_cvt (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   utf8_to_ucs2_in (cvt);
   ucs2_to_utf8_out (cvt);
@@ -1304,14 +1304,21 @@ test_utf8_utf32_codecvts ()
   VERIFY (has_facet<codecvt_c32> (loc_c));
 
   auto &cvt = use_facet<codecvt_c32> (loc_c);
-  test_utf8_utf32_codecvts (cvt);
+  test_utf8_utf32_cvt (cvt);
 
   codecvt_utf8<char32_t> cvt2;
-  test_utf8_utf32_codecvts (cvt2);
+  test_utf8_utf32_cvt (cvt2);
 
 #if __SIZEOF_WCHAR_T__ == 4
   codecvt_utf8<wchar_t> cvt3;
-  test_utf8_utf32_codecvts (cvt3);
+  test_utf8_utf32_cvt (cvt3);
+#endif
+
+#ifdef __cpp_char8_t
+  using codecvt_c32_c8 = codecvt<char32_t, char8_t, mbstate_t>;
+  VERIFY (has_facet<codecvt_c32_c8> (loc_c));
+  auto &cvt4 = use_facet<codecvt_c32_c8> (loc_c);
+  test_utf8_utf32_cvt (cvt4);
 #endif
 }
 
@@ -1323,17 +1330,24 @@ test_utf8_utf16_codecvts ()
   VERIFY (has_facet<codecvt_c16> (loc_c));
 
   auto &cvt = use_facet<codecvt_c16> (loc_c);
-  test_utf8_utf16_cvts (cvt);
+  test_utf8_utf16_cvt (cvt);
 
   codecvt_utf8_utf16<char16_t> cvt2;
-  test_utf8_utf16_cvts (cvt2);
+  test_utf8_utf16_cvt (cvt2);
 
   codecvt_utf8_utf16<char32_t> cvt3;
-  test_utf8_utf16_cvts (cvt3);
+  test_utf8_utf16_cvt (cvt3);
 
-#if __SIZEOF_WCHAR_T__ >= 2
+#if _WIN32 || __SIZEOF_WCHAR_T__ >= 2
   codecvt_utf8_utf16<wchar_t> cvt4;
-  test_utf8_utf16_cvts (cvt4);
+  test_utf8_utf16_cvt (cvt4);
+#endif
+
+#ifdef __cpp_char8_t
+  using codecvt_c16_c8 = codecvt<char16_t, char8_t, mbstate_t>;
+  VERIFY (has_facet<codecvt_c16_c8> (loc_c));
+  auto &cvt5 = use_facet<codecvt_c16_c8> (loc_c);
+  test_utf8_utf16_cvt (cvt5);
 #endif
 }
 
@@ -1341,7 +1355,12 @@ void
 test_utf8_ucs2_codecvts ()
 {
   codecvt_utf8<char16_t> cvt;
-  test_utf8_ucs2_cvts (cvt);
+  test_utf8_ucs2_cvt (cvt);
+
+#if _WIN32 || __SIZEOF_WCHAR_T__ == 2
+  codecvt_utf8<wchar_t> cvt2;
+  test_utf8_ucs2_cvt (cvt2);
+#endif
 }
 
 int
