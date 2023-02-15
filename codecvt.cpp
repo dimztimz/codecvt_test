@@ -1,4 +1,4 @@
-// Copyright 2020 Dimitrij Mijoski
+// Copyright 2020-2023 Dimitrij Mijoski
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <codecvt>
@@ -17,8 +17,7 @@ bool global_error = false;
 	    "Error in line: %d,\n    Function: %s,\n    Assertion: %s\n",      \
 	    __LINE__, __FUNCTION__, #X);                                       \
 	}                                                                      \
-    }                                                                          \
-  while (0)
+  } while (0)
 
 struct test_offsets_ok
 {
@@ -171,9 +170,9 @@ void
 utf8_to_utf32_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
-  // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const unsigned char input[] = "bш\uAAAA\U0010AAAA";
-  const char32_t expected[] = U"bш\uAAAA\U0010AAAA";
+  // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP, 4-byte CP
+  const unsigned char input[] = "bш\uD700\U0010AAAA";
+  const char32_t expected[] = U"bш\uD700\U0010AAAA";
   static_assert (array_size (input) == 11, "");
   static_assert (array_size (expected) == 5, "");
 
@@ -191,6 +190,12 @@ utf8_to_utf32_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     {3, 4, 1, 1, 0xFF, 1},
     {6, 4, 3, 2, 0xFF, 3},
     {10, 4, 6, 3, 0xFF, 6},
+
+    // replace leading byte with trailing byte
+    {1, 4, 0, 0, 0b10101010, 0},
+    {3, 4, 1, 1, 0b10101010, 1},
+    {6, 4, 3, 2, 0b10101010, 3},
+    {10, 4, 6, 3, 0b10101010, 6},
 
     // replace first trailing byte with ASCII byte
     {3, 4, 1, 1, 'z', 2},
@@ -229,6 +234,27 @@ utf8_to_utf32_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
     // replace second trailing byte with invalid byte, also incomplete at end
     {9, 4, 6, 3, 0xFF, 8},
+
+    // Surrogate. We modify the second byte (first trailing) of the 3-byte CP
+    // U+D700
+    {6, 4, 3, 2, 0b10100000, 4}, // turn U+D700 into U+D800
+    {6, 4, 3, 2, 0b10101100, 4}, // turn U+D700 into U+DB00
+    {6, 4, 3, 2, 0b10110000, 4}, // turn U+D700 into U+DC00
+    {6, 4, 3, 2, 0b10111100, 4}, // turn U+D700 into U+DF00
+
+    // Overlong. The CPs in the input are chosen such as modifying just the
+    // leading byte is enough to make them overlong, i.e. for the 3-byte and
+    // 4-byte CP the second byte (first trailing) has enough leading zeroes.
+    {3, 4, 1, 1, 0b11000000, 1},  // make the 2-byte CP overlong
+    {3, 4, 1, 1, 0b11000001, 1},  // make the 2-byte CP overlong
+    {6, 4, 3, 2, 0b11100000, 3},  // make the 3-byte CP overlong
+    {10, 4, 6, 3, 0b11110000, 6}, // make the 4-byte CP overlong
+
+    // Above range
+    // turn U+10AAAA into U+14AAAA by changing its leading byte
+    {10, 4, 6, 3, 0b11110101, 6},
+    // turn U+10AAAA into U+11AAAA by changing its 2nd byte
+    {10, 4, 6, 3, 0b10011010, 7},
   };
   for (auto t : offsets)
     {
@@ -568,9 +594,9 @@ void
 utf8_to_utf16_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
-  // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const unsigned char input[] = "bш\uAAAA\U0010AAAA";
-  const char16_t expected[] = u"bш\uAAAA\U0010AAAA";
+  // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP, 4-byte CP
+  const unsigned char input[] = "bш\uD700\U0010AAAA";
+  const char16_t expected[] = u"bш\uD700\U0010AAAA";
   static_assert (array_size (input) == 11, "");
   static_assert (array_size (expected) == 6, "");
 
@@ -588,6 +614,12 @@ utf8_to_utf16_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     {3, 5, 1, 1, 0xFF, 1},
     {6, 5, 3, 2, 0xFF, 3},
     {10, 5, 6, 3, 0xFF, 6},
+
+    // replace leading byte with trailing byte
+    {1, 5, 0, 0, 0b10101010, 0},
+    {3, 5, 1, 1, 0b10101010, 1},
+    {6, 5, 3, 2, 0b10101010, 3},
+    {10, 5, 6, 3, 0b10101010, 6},
 
     // replace first trailing byte with ASCII byte
     {3, 5, 1, 1, 'z', 2},
@@ -626,6 +658,27 @@ utf8_to_utf16_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
     // replace second trailing byte with invalid byte, also incomplete at end
     {9, 5, 6, 3, 0xFF, 8},
+
+    // Surrogate. We modify the second byte (first trailing) of the 3-byte CP
+    // U+D700
+    {6, 5, 3, 2, 0b10100000, 4}, // turn U+D700 into U+D800
+    {6, 5, 3, 2, 0b10101100, 4}, // turn U+D700 into U+DB00
+    {6, 5, 3, 2, 0b10110000, 4}, // turn U+D700 into U+DC00
+    {6, 5, 3, 2, 0b10111100, 4}, // turn U+D700 into U+DF00
+
+    // Overlong. The CPs in the input are chosen such as modifying just the
+    // leading byte is enough to make them overlong, i.e. for the 3-byte and
+    // 4-byte CP the second byte (first trailing) has enough leading zeroes.
+    {3, 5, 1, 1, 0b11000000, 1},  // make the 2-byte CP overlong
+    {3, 5, 1, 1, 0b11000001, 1},  // make the 2-byte CP overlong
+    {6, 5, 3, 2, 0b11100000, 3},  // make the 3-byte CP overlong
+    {10, 5, 6, 3, 0b11110000, 6}, // make the 4-byte CP overlong
+
+    // Above range
+    // turn U+10AAAA into U+14AAAA by changing its leading byte
+    {10, 5, 6, 3, 0b11110101, 6},
+    // turn U+10AAAA into U+11AAAA by changing its 2nd byte
+    {10, 5, 6, 3, 0b10011010, 7},
   };
   for (auto t : offsets)
     {
@@ -787,6 +840,8 @@ utf16_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   VERIFY (char_traits<InternT>::length (in) == 5);
   VERIFY (char_traits<ExternT>::length (exp) == 10);
 
+  // The only possible error in UTF-16 is unpaired surrogate code units.
+  // So we replace valid code points (scalar values) with lone surrogate CU.
   test_offsets_error<InternT> offsets[] = {
     {5, 10, 0, 0, 0xD800, 0},
     {5, 10, 0, 0, 0xDBFF, 0},
@@ -982,8 +1037,8 @@ void
 utf8_to_ucs2_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
-  const unsigned char input[] = "bш\uAAAA\U0010AAAA";
-  const char16_t expected[] = u"bш\uAAAA\U0010AAAA";
+  const unsigned char input[] = "bш\uD700\U0010AAAA";
+  const char16_t expected[] = u"bш\uD700\U0010AAAA";
   static_assert (array_size (input) == 11, "");
   static_assert (array_size (expected) == 6, "");
 
@@ -1001,6 +1056,12 @@ utf8_to_ucs2_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     {3, 5, 1, 1, 0xFF, 1},
     {6, 5, 3, 2, 0xFF, 3},
     {10, 5, 6, 3, 0xFF, 6},
+
+    // replace leading byte with trailing byte
+    {1, 5, 0, 0, 0b10101010, 0},
+    {3, 5, 1, 1, 0b10101010, 1},
+    {6, 5, 3, 2, 0b10101010, 3},
+    {10, 5, 6, 3, 0b10101010, 6},
 
     // replace first trailing byte with ASCII byte
     {3, 5, 1, 1, 'z', 2},
@@ -1024,33 +1085,13 @@ utf8_to_ucs2_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     {10, 5, 6, 3, 'z', 9},
     {10, 5, 6, 3, 0xFF, 9},
 
-    // When we see a leading byte of 4-byte CP, we should return error, no
-    // matter if it is incomplete at the end or has errors in the trailing
-    // bytes.
-
-    // Don't replace anything, show full 4-byte CP
-    {10, 4, 6, 3, 'b', 0},
-    {10, 5, 6, 3, 'b', 0},
-
-    // Don't replace anything, show incomplete 4-byte CP at the end
-    {7, 4, 6, 3, 'b', 0}, // incomplete fourth CP
-    {8, 4, 6, 3, 'b', 0}, // incomplete fourth CP
-    {9, 4, 6, 3, 'b', 0}, // incomplete fourth CP
-    {7, 5, 6, 3, 'b', 0}, // incomplete fourth CP
-    {8, 5, 6, 3, 'b', 0}, // incomplete fourth CP
-    {9, 5, 6, 3, 'b', 0}, // incomplete fourth CP
-
     // replace first trailing byte with ASCII byte, also incomplete at end
     {5, 5, 3, 2, 'z', 4},
-
-    // replace first trailing byte with invalid byte, also incomplete at end
-    {5, 5, 3, 2, 0xFF, 4},
-
-    // replace first trailing byte with ASCII byte, also incomplete at end
     {8, 5, 6, 3, 'z', 7},
     {9, 5, 6, 3, 'z', 7},
 
     // replace first trailing byte with invalid byte, also incomplete at end
+    {5, 5, 3, 2, 0xFF, 4},
     {8, 5, 6, 3, 0xFF, 7},
     {9, 5, 6, 3, 0xFF, 7},
 
@@ -1059,6 +1100,38 @@ utf8_to_ucs2_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
     // replace second trailing byte with invalid byte, also incomplete at end
     {9, 5, 6, 3, 0xFF, 8},
+
+    // Surrogate. We modify the second byte (first trailing) of the 3-byte CP
+    // U+D700
+    {6, 5, 3, 2, 0b10100000, 4}, // turn U+D700 into U+D800
+    {6, 5, 3, 2, 0b10101100, 4}, // turn U+D700 into U+DB00
+    {6, 5, 3, 2, 0b10110000, 4}, // turn U+D700 into U+DC00
+    {6, 5, 3, 2, 0b10111100, 4}, // turn U+D700 into U+DF00
+
+    // Overlong. The CPs in the input are chosen such as modifying just the
+    // leading byte is enough to make them overlong, i.e. for the 3-byte and
+    // 4-byte CP the second byte (first trailing) has enough leading zeroes.
+    {3, 5, 1, 1, 0b11000000, 1},  // make the 2-byte CP overlong
+    {3, 5, 1, 1, 0b11000001, 1},  // make the 2-byte CP overlong
+    {6, 5, 3, 2, 0b11100000, 3},  // make the 3-byte CP overlong
+    {10, 5, 6, 3, 0b11110000, 6}, // make the 4-byte CP overlong
+
+    // Above range
+    // turn U+10AAAA into U+14AAAA by changing its leading byte
+    {10, 5, 6, 3, 0b11110101, 6},
+    // turn U+10AAAA into U+11AAAA by changing its 2nd byte
+    {10, 5, 6, 3, 0b10011010, 7},
+    // Don't replace anything, show full 4-byte CP U+10AAAA
+    {10, 4, 6, 3, 'b', 0},
+    {10, 5, 6, 3, 'b', 0},
+    // Don't replace anything, show incomplete 4-byte CP at the end. It's still
+    // out of UCS2 range just by seeing the first byte.
+    {7, 4, 6, 3, 'b', 0}, // incomplete fourth CP
+    {8, 4, 6, 3, 'b', 0}, // incomplete fourth CP
+    {9, 4, 6, 3, 'b', 0}, // incomplete fourth CP
+    {7, 5, 6, 3, 'b', 0}, // incomplete fourth CP
+    {8, 5, 6, 3, 'b', 0}, // incomplete fourth CP
+    {9, 5, 6, 3, 'b', 0}, // incomplete fourth CP
   };
   for (auto t : offsets)
     {
