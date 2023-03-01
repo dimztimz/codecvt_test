@@ -433,7 +433,7 @@ utf32_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   test_offsets_error<InternT> offsets[] = {
 
     // Surrogate CP
-    {4, 10, 0, 0, 0xDB00, 0},
+    {4, 10, 0, 0, 0xD800, 0},
     {4, 10, 1, 1, 0xDBFF, 1},
     {4, 10, 2, 3, 0xDC00, 2},
     {4, 10, 3, 6, 0xDFFF, 3},
