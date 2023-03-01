@@ -183,7 +183,17 @@ utf8_to_utf32_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   VERIFY (char_traits<ExternT>::length (in) == 10);
   VERIFY (char_traits<InternT>::length (exp) == 4);
 
+  // There are 5 classes of errors in UTF-8 decoding
+  // 1. Missing leading byte
+  // 2. Missing trailing byte
+  // 3. Surrogate CP
+  // 4. Ovelong sequence
+  // 5. CP out of Unicode range
   test_offsets_error<unsigned char> offsets[] = {
+
+    // 1. Missing leading byte. We will replace the leading byte with
+    // non-leading byte, such as a byte that is always invalid or a trailing
+    // byte.
 
     // replace leading byte with invalid byte
     {1, 4, 0, 0, 0xFF, 0},
@@ -196,6 +206,10 @@ utf8_to_utf32_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     {3, 4, 1, 1, 0b10101010, 1},
     {6, 4, 3, 2, 0b10101010, 3},
     {10, 4, 6, 3, 0b10101010, 6},
+
+    // 2. Missing trailing byte. We will replace the trailing byte with
+    // non-trailing byte, such as a byte that is always invalid or a leading
+    // byte (simple ASCII byte in our case).
 
     // replace first trailing byte with ASCII byte
     {3, 4, 1, 1, 'z', 2},
@@ -219,6 +233,12 @@ utf8_to_utf32_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     {10, 4, 6, 3, 'z', 9},
     {10, 4, 6, 3, 0xFF, 9},
 
+    // 2.1 The following test-cases raise doubt whether error or partial should
+    // be returned. For example, we have 4-byte sequence with valid leading
+    // byte. If we hide the last byte we need to return partial. But, if the
+    // second or third byte, which are visible to the call to codecvt, are
+    // malformed then error should be returned.
+
     // replace first trailing byte with ASCII byte, also incomplete at end
     {5, 4, 3, 2, 'z', 4},
     {8, 4, 6, 3, 'z', 7},
@@ -235,22 +255,23 @@ utf8_to_utf32_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     // replace second trailing byte with invalid byte, also incomplete at end
     {9, 4, 6, 3, 0xFF, 8},
 
-    // Surrogate. We modify the second byte (first trailing) of the 3-byte CP
-    // U+D700
+    // 3. Surrogate CP. We modify the second byte (first trailing) of the 3-byte
+    // CP U+D700
     {6, 4, 3, 2, 0b10100000, 4}, // turn U+D700 into U+D800
     {6, 4, 3, 2, 0b10101100, 4}, // turn U+D700 into U+DB00
     {6, 4, 3, 2, 0b10110000, 4}, // turn U+D700 into U+DC00
     {6, 4, 3, 2, 0b10111100, 4}, // turn U+D700 into U+DF00
 
-    // Overlong. The CPs in the input are chosen such as modifying just the
-    // leading byte is enough to make them overlong, i.e. for the 3-byte and
-    // 4-byte CP the second byte (first trailing) has enough leading zeroes.
+    // 4. Overlong sequence. The CPs in the input are chosen such as modifying
+    // just the leading byte is enough to make them overlong, i.e. for the
+    // 3-byte and 4-byte CP the second byte (first trailing) has enough leading
+    // zeroes.
     {3, 4, 1, 1, 0b11000000, 1},  // make the 2-byte CP overlong
     {3, 4, 1, 1, 0b11000001, 1},  // make the 2-byte CP overlong
     {6, 4, 3, 2, 0b11100000, 3},  // make the 3-byte CP overlong
     {10, 4, 6, 3, 0b11110000, 6}, // make the 4-byte CP overlong
 
-    // Above range
+    // 5. CP above range
     // turn U+10AAAA into U+14AAAA by changing its leading byte
     {10, 4, 6, 3, 0b11110101, 6},
     // turn U+10AAAA into U+11AAAA by changing its 2nd byte
@@ -409,10 +430,19 @@ utf32_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   VERIFY (char_traits<InternT>::length (in) == 4);
   VERIFY (char_traits<ExternT>::length (exp) == 10);
 
-  test_offsets_error<InternT> offsets[] = {{4, 10, 0, 0, 0x00110000, 0},
-					   {4, 10, 1, 1, 0x00110000, 1},
-					   {4, 10, 2, 3, 0x00110000, 2},
-					   {4, 10, 3, 6, 0x00110000, 3}};
+  test_offsets_error<InternT> offsets[] = {
+
+    // Surrogate CP
+    {4, 10, 0, 0, 0xDB00, 0},
+    {4, 10, 1, 1, 0xDBFF, 1},
+    {4, 10, 2, 3, 0xDC00, 2},
+    {4, 10, 3, 6, 0xDFFF, 3},
+
+    // CP out of range
+    {4, 10, 0, 0, 0x00110000, 0},
+    {4, 10, 1, 1, 0x00110000, 1},
+    {4, 10, 2, 3, 0x00110000, 2},
+    {4, 10, 3, 6, 0x00110000, 3}};
 
   for (auto t : offsets)
     {
@@ -607,7 +637,17 @@ utf8_to_utf16_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   VERIFY (char_traits<ExternT>::length (in) == 10);
   VERIFY (char_traits<InternT>::length (exp) == 5);
 
+  // There are 5 classes of errors in UTF-8 decoding
+  // 1. Missing leading byte
+  // 2. Missing trailing byte
+  // 3. Surrogate CP
+  // 4. Ovelong sequence
+  // 5. CP out of Unicode range
   test_offsets_error<unsigned char> offsets[] = {
+
+    // 1. Missing leading byte. We will replace the leading byte with
+    // non-leading byte, such as a byte that is always invalid or a trailing
+    // byte.
 
     // replace leading byte with invalid byte
     {1, 5, 0, 0, 0xFF, 0},
@@ -620,6 +660,10 @@ utf8_to_utf16_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     {3, 5, 1, 1, 0b10101010, 1},
     {6, 5, 3, 2, 0b10101010, 3},
     {10, 5, 6, 3, 0b10101010, 6},
+
+    // 2. Missing trailing byte. We will replace the trailing byte with
+    // non-trailing byte, such as a byte that is always invalid or a leading
+    // byte (simple ASCII byte in our case).
 
     // replace first trailing byte with ASCII byte
     {3, 5, 1, 1, 'z', 2},
@@ -643,6 +687,12 @@ utf8_to_utf16_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     {10, 5, 6, 3, 'z', 9},
     {10, 5, 6, 3, 0xFF, 9},
 
+    // 2.1 The following test-cases raise doubt whether error or partial should
+    // be returned. For example, we have 4-byte sequence with valid leading
+    // byte. If we hide the last byte we need to return partial. But, if the
+    // second or third byte, which are visible to the call to codecvt, are
+    // malformed then error should be returned.
+
     // replace first trailing byte with ASCII byte, also incomplete at end
     {5, 5, 3, 2, 'z', 4},
     {8, 5, 6, 3, 'z', 7},
@@ -659,22 +709,23 @@ utf8_to_utf16_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     // replace second trailing byte with invalid byte, also incomplete at end
     {9, 5, 6, 3, 0xFF, 8},
 
-    // Surrogate. We modify the second byte (first trailing) of the 3-byte CP
-    // U+D700
+    // 3. Surrogate CP. We modify the second byte (first trailing) of the 3-byte
+    // CP U+D700
     {6, 5, 3, 2, 0b10100000, 4}, // turn U+D700 into U+D800
     {6, 5, 3, 2, 0b10101100, 4}, // turn U+D700 into U+DB00
     {6, 5, 3, 2, 0b10110000, 4}, // turn U+D700 into U+DC00
     {6, 5, 3, 2, 0b10111100, 4}, // turn U+D700 into U+DF00
 
-    // Overlong. The CPs in the input are chosen such as modifying just the
-    // leading byte is enough to make them overlong, i.e. for the 3-byte and
-    // 4-byte CP the second byte (first trailing) has enough leading zeroes.
+    // 4. Overlong sequence. The CPs in the input are chosen such as modifying
+    // just the leading byte is enough to make them overlong, i.e. for the
+    // 3-byte and 4-byte CP the second byte (first trailing) has enough leading
+    // zeroes.
     {3, 5, 1, 1, 0b11000000, 1},  // make the 2-byte CP overlong
     {3, 5, 1, 1, 0b11000001, 1},  // make the 2-byte CP overlong
     {6, 5, 3, 2, 0b11100000, 3},  // make the 3-byte CP overlong
     {10, 5, 6, 3, 0b11110000, 6}, // make the 4-byte CP overlong
 
-    // Above range
+    // 5. CP above range
     // turn U+10AAAA into U+14AAAA by changing its leading byte
     {10, 5, 6, 3, 0b11110101, 6},
     // turn U+10AAAA into U+11AAAA by changing its 2nd byte
@@ -1049,7 +1100,17 @@ utf8_to_ucs2_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   VERIFY (char_traits<ExternT>::length (in) == 10);
   VERIFY (char_traits<InternT>::length (exp) == 5);
 
+  // There are 5 classes of errors in UTF-8 decoding
+  // 1. Missing leading byte
+  // 2. Missing trailing byte
+  // 3. Surrogate CP
+  // 4. Ovelong sequence
+  // 5. CP out of Unicode range
   test_offsets_error<unsigned char> offsets[] = {
+
+    // 1. Missing leading byte. We will replace the leading byte with
+    // non-leading byte, such as a byte that is always invalid or a trailing
+    // byte.
 
     // replace leading byte with invalid byte
     {1, 5, 0, 0, 0xFF, 0},
@@ -1062,6 +1123,10 @@ utf8_to_ucs2_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     {3, 5, 1, 1, 0b10101010, 1},
     {6, 5, 3, 2, 0b10101010, 3},
     {10, 5, 6, 3, 0b10101010, 6},
+
+    // 2. Missing trailing byte. We will replace the trailing byte with
+    // non-trailing byte, such as a byte that is always invalid or a leading
+    // byte (simple ASCII byte in our case).
 
     // replace first trailing byte with ASCII byte
     {3, 5, 1, 1, 'z', 2},
@@ -1085,6 +1150,12 @@ utf8_to_ucs2_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     {10, 5, 6, 3, 'z', 9},
     {10, 5, 6, 3, 0xFF, 9},
 
+    // 2.1 The following test-cases raise doubt whether error or partial should
+    // be returned. For example, we have 4-byte sequence with valid leading
+    // byte. If we hide the last byte we need to return partial. But, if the
+    // second or third byte, which are visible to the call to codecvt, are
+    // malformed then error should be returned.
+
     // replace first trailing byte with ASCII byte, also incomplete at end
     {5, 5, 3, 2, 'z', 4},
     {8, 5, 6, 3, 'z', 7},
@@ -1101,22 +1172,23 @@ utf8_to_ucs2_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     // replace second trailing byte with invalid byte, also incomplete at end
     {9, 5, 6, 3, 0xFF, 8},
 
-    // Surrogate. We modify the second byte (first trailing) of the 3-byte CP
-    // U+D700
+    // 3. Surrogate CP. We modify the second byte (first trailing) of the 3-byte
+    // CP U+D700
     {6, 5, 3, 2, 0b10100000, 4}, // turn U+D700 into U+D800
     {6, 5, 3, 2, 0b10101100, 4}, // turn U+D700 into U+DB00
     {6, 5, 3, 2, 0b10110000, 4}, // turn U+D700 into U+DC00
     {6, 5, 3, 2, 0b10111100, 4}, // turn U+D700 into U+DF00
 
-    // Overlong. The CPs in the input are chosen such as modifying just the
-    // leading byte is enough to make them overlong, i.e. for the 3-byte and
-    // 4-byte CP the second byte (first trailing) has enough leading zeroes.
+    // 4. Overlong sequence. The CPs in the input are chosen such as modifying
+    // just the leading byte is enough to make them overlong, i.e. for the
+    // 3-byte and 4-byte CP the second byte (first trailing) has enough leading
+    // zeroes.
     {3, 5, 1, 1, 0b11000000, 1},  // make the 2-byte CP overlong
     {3, 5, 1, 1, 0b11000001, 1},  // make the 2-byte CP overlong
     {6, 5, 3, 2, 0b11100000, 3},  // make the 3-byte CP overlong
     {10, 5, 6, 3, 0b11110000, 6}, // make the 4-byte CP overlong
 
-    // Above range
+    // 5. CP above range
     // turn U+10AAAA into U+14AAAA by changing its leading byte
     {10, 5, 6, 3, 0b11110101, 6},
     // turn U+10AAAA into U+11AAAA by changing its 2nd byte
