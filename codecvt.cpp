@@ -47,8 +47,8 @@ utf8_to_utf32_in_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const unsigned char input[] = "bш\uAAAA\U0010AAAA";
-  const char32_t expected[] = U"bш\uAAAA\U0010AAAA";
+  const unsigned char input[] = "b\u0448\uAAAA\U0010AAAA";
+  const char32_t expected[] = U"b\u0448\uAAAA\U0010AAAA";
   static_assert (array_size (input) == 11, "");
   static_assert (array_size (expected) == 5, "");
 
@@ -107,8 +107,8 @@ utf8_to_utf32_in_partial (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const unsigned char input[] = "bш\uAAAA\U0010AAAA";
-  const char32_t expected[] = U"bш\uAAAA\U0010AAAA";
+  const unsigned char input[] = "b\u0448\uAAAA\U0010AAAA";
+  const char32_t expected[] = U"b\u0448\uAAAA\U0010AAAA";
   static_assert (array_size (input) == 11, "");
   static_assert (array_size (expected) == 5, "");
 
@@ -171,8 +171,8 @@ utf8_to_utf32_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP, 4-byte CP
-  const unsigned char input[] = "bш\uD700\U0010AAAA";
-  const char32_t expected[] = U"bш\uD700\U0010AAAA";
+  const unsigned char input[] = "b\u0448\uD700\U0010AAAA";
+  const char32_t expected[] = U"b\u0448\uD700\U0010AAAA";
   static_assert (array_size (input) == 11, "");
   static_assert (array_size (expected) == 5, "");
 
@@ -321,8 +321,8 @@ utf32_to_utf8_out_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const char32_t input[] = U"bш\uAAAA\U0010AAAA";
-  const unsigned char expected[] = "bш\uAAAA\U0010AAAA";
+  const char32_t input[] = U"b\u0448\uAAAA\U0010AAAA";
+  const unsigned char expected[] = "b\u0448\uAAAA\U0010AAAA";
   static_assert (array_size (input) == 5, "");
   static_assert (array_size (expected) == 11, "");
 
@@ -361,8 +361,8 @@ utf32_to_utf8_out_partial (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const char32_t input[] = U"bш\uAAAA\U0010AAAA";
-  const unsigned char expected[] = "bш\uAAAA\U0010AAAA";
+  const char32_t input[] = U"b\u0448\uAAAA\U0010AAAA";
+  const unsigned char expected[] = "b\u0448\uAAAA\U0010AAAA";
   static_assert (array_size (input) == 5, "");
   static_assert (array_size (expected) == 11, "");
 
@@ -418,8 +418,8 @@ utf32_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const char32_t input[] = U"bш\uAAAA\U0010AAAA";
-  const unsigned char expected[] = "bш\uAAAA\U0010AAAA";
+  const char32_t input[] = U"b\u0448\uAAAA\U0010AAAA";
+  const unsigned char expected[] = "b\u0448\uAAAA\U0010AAAA";
   static_assert (array_size (input) == 5, "");
   static_assert (array_size (expected) == 11, "");
 
@@ -496,8 +496,8 @@ utf8_to_utf16_in_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const unsigned char input[] = "bш\uAAAA\U0010AAAA";
-  const char16_t expected[] = u"bш\uAAAA\U0010AAAA";
+  const unsigned char input[] = "b\u0448\uAAAA\U0010AAAA";
+  const char16_t expected[] = u"b\u0448\uAAAA\U0010AAAA";
   static_assert (array_size (input) == 11, "");
   static_assert (array_size (expected) == 6, "");
 
@@ -556,8 +556,8 @@ utf8_to_utf16_in_partial (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const unsigned char input[] = "bш\uAAAA\U0010AAAA";
-  const char16_t expected[] = u"bш\uAAAA\U0010AAAA";
+  const unsigned char input[] = "b\u0448\uAAAA\U0010AAAA";
+  const char16_t expected[] = u"b\u0448\uAAAA\U0010AAAA";
   static_assert (array_size (input) == 11, "");
   static_assert (array_size (expected) == 6, "");
 
@@ -625,8 +625,8 @@ utf8_to_utf16_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP, 4-byte CP
-  const unsigned char input[] = "bш\uD700\U0010AAAA";
-  const char16_t expected[] = u"bш\uD700\U0010AAAA";
+  const unsigned char input[] = "b\u0448\uD700\U0010AAAA";
+  const char16_t expected[] = u"b\u0448\uD700\U0010AAAA";
   static_assert (array_size (input) == 11, "");
   static_assert (array_size (expected) == 6, "");
 
@@ -775,8 +775,8 @@ utf16_to_utf8_out_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const char16_t input[] = u"bш\uAAAA\U0010AAAA";
-  const unsigned char expected[] = "bш\uAAAA\U0010AAAA";
+  const char16_t input[] = u"b\u0448\uAAAA\U0010AAAA";
+  const unsigned char expected[] = "b\u0448\uAAAA\U0010AAAA";
   static_assert (array_size (input) == 6, "");
   static_assert (array_size (expected) == 11, "");
 
@@ -815,8 +815,8 @@ utf16_to_utf8_out_partial (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const char16_t input[] = u"bш\uAAAA\U0010AAAA";
-  const unsigned char expected[] = "bш\uAAAA\U0010AAAA";
+  const char16_t input[] = u"b\u0448\uAAAA\U0010AAAA";
+  const unsigned char expected[] = "b\u0448\uAAAA\U0010AAAA";
   static_assert (array_size (input) == 6, "");
   static_assert (array_size (expected) == 11, "");
 
@@ -879,8 +879,8 @@ utf16_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP, 3-byte CP and 4-byte CP
-  const char16_t input[] = u"bш\uAAAA\U0010AAAA";
-  const unsigned char expected[] = "bш\uAAAA\U0010AAAA";
+  const char16_t input[] = u"b\u0448\uAAAA\U0010AAAA";
+  const unsigned char expected[] = "b\u0448\uAAAA\U0010AAAA";
   static_assert (array_size (input) == 6, "");
   static_assert (array_size (expected) == 11, "");
 
@@ -973,8 +973,8 @@ utf8_to_ucs2_in_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP and 3-byte CP
-  const unsigned char input[] = "bш\uAAAA";
-  const char16_t expected[] = u"bш\uAAAA";
+  const unsigned char input[] = "b\u0448\uAAAA";
+  const char16_t expected[] = u"b\u0448\uAAAA";
   static_assert (array_size (input) == 7, "");
   static_assert (array_size (expected) == 4, "");
 
@@ -1033,8 +1033,8 @@ utf8_to_ucs2_in_partial (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP and 3-byte CP
-  const unsigned char input[] = "bш\uAAAA";
-  const char16_t expected[] = u"bш\uAAAA";
+  const unsigned char input[] = "b\u0448\uAAAA";
+  const char16_t expected[] = u"b\u0448\uAAAA";
   static_assert (array_size (input) == 7, "");
   static_assert (array_size (expected) == 4, "");
 
@@ -1088,8 +1088,8 @@ void
 utf8_to_ucs2_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
-  const unsigned char input[] = "bш\uD700\U0010AAAA";
-  const char16_t expected[] = u"bш\uD700\U0010AAAA";
+  const unsigned char input[] = "b\u0448\uD700\U0010AAAA";
+  const char16_t expected[] = u"b\u0448\uD700\U0010AAAA";
   static_assert (array_size (input) == 11, "");
   static_assert (array_size (expected) == 6, "");
 
@@ -1249,8 +1249,8 @@ ucs2_to_utf8_out_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP and 3-byte CP
-  const char16_t input[] = u"bш\uAAAA";
-  const unsigned char expected[] = "bш\uAAAA";
+  const char16_t input[] = u"b\u0448\uAAAA";
+  const unsigned char expected[] = "b\u0448\uAAAA";
   static_assert (array_size (input) == 4, "");
   static_assert (array_size (expected) == 7, "");
 
@@ -1289,8 +1289,8 @@ ucs2_to_utf8_out_partial (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
   // UTF-8 string of 1-byte CP, 2-byte CP and 3-byte CP
-  const char16_t input[] = u"bш\uAAAA";
-  const unsigned char expected[] = "bш\uAAAA";
+  const char16_t input[] = u"b\u0448\uAAAA";
+  const unsigned char expected[] = "b\u0448\uAAAA";
   static_assert (array_size (input) == 4, "");
   static_assert (array_size (expected) == 7, "");
 
@@ -1340,8 +1340,8 @@ void
 ucs2_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 {
   using namespace std;
-  const char16_t input[] = u"bш\uAAAA\U0010AAAA";
-  const unsigned char expected[] = "bш\uAAAA\U0010AAAA";
+  const char16_t input[] = u"b\u0448\uAAAA\U0010AAAA";
+  const unsigned char expected[] = "b\u0448\uAAAA\U0010AAAA";
   static_assert (array_size (input) == 6, "");
   static_assert (array_size (expected) == 11, "");
 
