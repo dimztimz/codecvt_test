@@ -1439,9 +1439,35 @@ test_utf8_ucs2_cvt (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   ucs2_to_utf8_out (cvt);
 }
 
+enum utf16_endianess
+{
+  utf16_big_endian,
+  utf16_little_endian
+};
+
+template <class Iter1, class Iter2>
+Iter2
+utf16_to_bytes (Iter1 f, Iter1 l, Iter2 o, utf16_endianess e)
+{
+  if (e == utf16_big_endian)
+    for (; f != l; ++f)
+      {
+	*o++ = (*f >> 8) & 0xFF;
+	*o++ = *f & 0xFF;
+      }
+  else
+    for (; f != l; ++f)
+      {
+	*o++ = *f & 0xFF;
+	*o++ = (*f >> 8) & 0xFF;
+      }
+  return o;
+}
+
 template <class InternT>
 void
-utf16_to_utf32_in_ok (const std::codecvt<InternT, char, mbstate_t> &cvt)
+utf16_to_utf32_in_ok (const std::codecvt<InternT, char, mbstate_t> &cvt,
+		      utf16_endianess endianess)
 {
   using namespace std;
   const char16_t input[] = u"b\u0448\uAAAA\U0010AAAA";
@@ -1451,12 +1477,7 @@ utf16_to_utf32_in_ok (const std::codecvt<InternT, char, mbstate_t> &cvt)
 
   char in[array_size (input) * 2];
   InternT exp[array_size (expected)];
-  auto in_iter = begin (in);
-  for (auto x : input)
-    {
-      *in_iter++ = x >> 8;
-      *in_iter++ = x & 0xFF;
-    }
+  utf16_to_bytes (begin (input), end (input), begin (in), endianess);
   copy (begin (expected), end (expected), begin (exp));
 
   test_offsets_ok offsets[] = {{0, 0}, {2, 1}, {4, 2}, {6, 3}, {10, 4}};
@@ -1503,7 +1524,8 @@ utf16_to_utf32_in_ok (const std::codecvt<InternT, char, mbstate_t> &cvt)
 
 template <class InternT>
 void
-utf16_to_utf32_in_partial (const std::codecvt<InternT, char, mbstate_t> &cvt)
+utf16_to_utf32_in_partial (const std::codecvt<InternT, char, mbstate_t> &cvt,
+			   utf16_endianess endianess)
 {
   using namespace std;
   const char16_t input[] = u"b\u0448\uAAAA\U0010AAAA";
@@ -1514,11 +1536,7 @@ utf16_to_utf32_in_partial (const std::codecvt<InternT, char, mbstate_t> &cvt)
   char in[array_size (input) * 2];
   InternT exp[array_size (expected)];
   auto in_iter = begin (in);
-  for (auto x : input)
-    {
-      *in_iter++ = x >> 8;
-      *in_iter++ = x & 0xFF;
-    }
+  utf16_to_bytes (begin (input), end (input), begin (in), endianess);
   copy (begin (expected), end (expected), begin (exp));
 
   test_offsets_partial offsets[] = {
@@ -1569,7 +1587,8 @@ utf16_to_utf32_in_partial (const std::codecvt<InternT, char, mbstate_t> &cvt)
 
 template <class InternT>
 void
-utf16_to_utf32_in_error (const std::codecvt<InternT, char, mbstate_t> &cvt)
+utf16_to_utf32_in_error (const std::codecvt<InternT, char, mbstate_t> &cvt,
+			 utf16_endianess endianess)
 {
   using namespace std;
   char16_t input[] = u"b\u0448\uAAAA\U0010AAAA";
@@ -1620,12 +1639,7 @@ utf16_to_utf32_in_error (const std::codecvt<InternT, char, mbstate_t> &cvt)
       VERIFY (t.expected_out_next <= t.out_size);
       auto old_char = input[t.replace_pos];
       input[t.replace_pos] = t.replace_char; // replace in input, not in in
-      auto in_iter = begin (in);
-      for (auto x : input)
-	{
-	  *in_iter++ = x >> 8;
-	  *in_iter++ = x & 0xFF;
-	}
+      utf16_to_bytes (begin (input), end (input), begin (in), endianess);
 
       auto state = mbstate_t{};
       auto in_next = (const char *) nullptr;
@@ -1644,6 +1658,168 @@ utf16_to_utf32_in_error (const std::codecvt<InternT, char, mbstate_t> &cvt)
 
       input[t.replace_pos] = old_char;
     }
+}
+
+template <class InternT>
+void
+utf32_to_utf16_out_ok (const std::codecvt<InternT, char, mbstate_t> &cvt,
+		       utf16_endianess endianess)
+{
+  using namespace std;
+  const char32_t input[] = U"b\u0448\uAAAA\U0010AAAA";
+  const char16_t expected[] = u"b\u0448\uAAAA\U0010AAAA";
+  static_assert (array_size (input) == 5, "");
+  static_assert (array_size (expected) == 6, "");
+
+  InternT in[array_size (input)];
+  char exp[array_size (expected) * 2];
+  copy (begin (input), end (input), begin (in));
+  utf16_to_bytes (begin (expected), end (expected), begin (exp), endianess);
+
+  const test_offsets_ok offsets[] = {{0, 0}, {1, 2}, {2, 4}, {3, 6}, {4, 10}};
+  for (auto t : offsets)
+    {
+      char out[array_size (exp) - 2] = {};
+      VERIFY (t.in_size <= array_size (in));
+      VERIFY (t.out_size <= array_size (out));
+      auto state = mbstate_t{};
+      auto in_next = (const InternT *) nullptr;
+      auto out_next = (char *) nullptr;
+      auto res = codecvt_base::result ();
+
+      res = cvt.out (state, in, in + t.in_size, in_next, out, out + t.out_size,
+		     out_next);
+      VERIFY (res == cvt.ok);
+      VERIFY (in_next == in + t.in_size);
+      VERIFY (out_next == out + t.out_size);
+      VERIFY (char_traits<char>::compare (out, exp, t.out_size) == 0);
+      if (t.out_size < array_size (out))
+	VERIFY (out[t.out_size] == 0);
+    }
+}
+
+template <class InternT>
+void
+utf32_to_utf16_out_partial (const std::codecvt<InternT, char, mbstate_t> &cvt,
+			    utf16_endianess endianess)
+{
+  using namespace std;
+  const char32_t input[] = U"b\u0448\uAAAA\U0010AAAA";
+  const char16_t expected[] = u"b\u0448\uAAAA\U0010AAAA";
+  static_assert (array_size (input) == 5, "");
+  static_assert (array_size (expected) == 6, "");
+
+  InternT in[array_size (input)];
+  char exp[array_size (expected) * 2];
+  copy (begin (input), end (input), begin (in));
+  utf16_to_bytes (begin (expected), end (expected), begin (exp), endianess);
+
+  const test_offsets_partial offsets[] = {
+    {1, 0, 0, 0}, // no space for first CP
+
+    {2, 2, 1, 2}, // no space for second CP
+    {2, 3, 1, 2}, // no space for second CP
+
+    {3, 4, 2, 4}, // no space for third CP
+    {3, 5, 2, 4}, // no space for third CP
+
+    {4, 6, 3, 6}, // no space for fourth CP
+    {4, 7, 3, 6}, // no space for fourth CP
+    {4, 8, 3, 6}, // no space for fourth CP
+    {4, 9, 3, 6}, // no space for fourth CP
+  };
+  for (auto t : offsets)
+    {
+      char out[array_size (exp) - 2] = {};
+      VERIFY (t.in_size <= array_size (in));
+      VERIFY (t.out_size <= array_size (out));
+      VERIFY (t.expected_in_next <= t.in_size);
+      VERIFY (t.expected_out_next <= t.out_size);
+      auto state = mbstate_t{};
+      auto in_next = (const InternT *) nullptr;
+      auto out_next = (char *) nullptr;
+      auto res = codecvt_base::result ();
+
+      res = cvt.out (state, in, in + t.in_size, in_next, out, out + t.out_size,
+		     out_next);
+      VERIFY (res == cvt.partial);
+      VERIFY (in_next == in + t.expected_in_next);
+      VERIFY (out_next == out + t.expected_out_next);
+      VERIFY (char_traits<char>::compare (out, exp, t.expected_out_next) == 0);
+      if (t.expected_out_next < array_size (out))
+	VERIFY (out[t.expected_out_next] == 0);
+    }
+}
+
+template <class InternT>
+void
+utf32_to_utf16_out_error (const std::codecvt<InternT, char, mbstate_t> &cvt,
+			  utf16_endianess endianess)
+{
+  using namespace std;
+  const char32_t input[] = U"b\u0448\uAAAA\U0010AAAA";
+  const char16_t expected[] = u"b\u0448\uAAAA\U0010AAAA";
+  static_assert (array_size (input) == 5, "");
+  static_assert (array_size (expected) == 6, "");
+
+  InternT in[array_size (input)];
+  char exp[array_size (expected) * 2];
+  copy (begin (input), end (input), begin (in));
+  utf16_to_bytes (begin (expected), end (expected), begin (exp), endianess);
+
+  test_offsets_error<InternT> offsets[] = {
+
+    // Surrogate CP
+    {4, 10, 0, 0, 0xD800, 0},
+    {4, 10, 1, 2, 0xDBFF, 1},
+    {4, 10, 2, 4, 0xDC00, 2},
+    {4, 10, 3, 6, 0xDFFF, 3},
+
+    // CP out of range
+    {4, 10, 0, 0, 0x00110000, 0},
+    {4, 10, 1, 2, 0x00110000, 1},
+    {4, 10, 2, 4, 0x00110000, 2},
+    {4, 10, 3, 6, 0x00110000, 3}};
+
+  for (auto t : offsets)
+    {
+      char out[array_size (exp) - 2] = {};
+      VERIFY (t.in_size <= array_size (in));
+      VERIFY (t.out_size <= array_size (out));
+      VERIFY (t.expected_in_next <= t.in_size);
+      VERIFY (t.expected_out_next <= t.out_size);
+      auto old_char = in[t.replace_pos];
+      in[t.replace_pos] = t.replace_char;
+
+      auto state = mbstate_t{};
+      auto in_next = (const InternT *) nullptr;
+      auto out_next = (char *) nullptr;
+      auto res = codecvt_base::result ();
+
+      res = cvt.out (state, in, in + t.in_size, in_next, out, out + t.out_size,
+		     out_next);
+      VERIFY (res == cvt.error);
+      VERIFY (in_next == in + t.expected_in_next);
+      VERIFY (out_next == out + t.expected_out_next);
+      VERIFY (char_traits<char>::compare (out, exp, t.expected_out_next) == 0);
+      if (t.expected_out_next < array_size (out))
+	VERIFY (out[t.expected_out_next] == 0);
+
+      in[t.replace_pos] = old_char;
+    }
+}
+
+template <class InternT>
+void
+test_utf16_utf32_cvt (const std::codecvt<InternT, char, mbstate_t> &cvt,
+		      utf16_endianess endianess)
+{
+  utf16_to_utf32_in_ok (cvt, endianess);
+  utf16_to_utf32_in_partial (cvt, endianess);
+  utf16_to_utf32_in_error (cvt, endianess);
+  utf32_to_utf16_out_ok (cvt, endianess);
+  utf32_to_utf16_out_partial (cvt, endianess);
+  utf32_to_utf16_out_error (cvt, endianess);
 }
 
 using namespace std;
@@ -1719,15 +1895,17 @@ void
 test_utf16_utf32_codecvts ()
 {
   codecvt_utf16<char32_t> cvt;
-  utf16_to_utf32_in_ok (cvt);
-  utf16_to_utf32_in_partial (cvt);
-  utf16_to_utf32_in_error (cvt);
+  test_utf16_utf32_cvt (cvt, utf16_big_endian);
+
+  codecvt_utf16<char32_t, 0x10FFFF, codecvt_mode::little_endian> cvt2;
+  test_utf16_utf32_cvt (cvt2, utf16_little_endian);
 
 #if __SIZEOF_WCHAR_T__ == 4
-  codecvt_utf16<wchar_t> cvt2;
-  utf16_to_utf32_in_ok (cvt2);
-  utf16_to_utf32_in_partial (cvt2);
-  utf16_to_utf32_in_error (cvt2);
+  codecvt_utf16<wchar_t> cvt3;
+  test_utf16_utf32_cvt (cvt3, utf16_big_endian);
+
+  codecvt_utf16<wchar_t, 0x10FFFF, codecvt_mode::little_endian> cvt4;
+  test_utf16_utf32_cvt (cvt4, utf16_little_endian);
 #endif
 }
 
