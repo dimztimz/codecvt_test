@@ -1353,23 +1353,20 @@ ucs2_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   VERIFY (char_traits<ExternT>::length (exp) == 10);
 
   test_offsets_error<InternT> offsets[] = {
-    {5, 10, 0, 0, 0xD800, 0},
-    {5, 10, 0, 0, 0xDBFF, 0},
-    {5, 10, 0, 0, 0xDC00, 0},
-    {5, 10, 0, 0, 0xDFFF, 0},
+    {3, 6, 0, 0, 0xD800, 0},
+    {3, 6, 0, 0, 0xDBFF, 0},
+    {3, 6, 0, 0, 0xDC00, 0},
+    {3, 6, 0, 0, 0xDFFF, 0},
 
-    {5, 10, 1, 1, 0xD800, 1},
-    {5, 10, 1, 1, 0xDBFF, 1},
-    {5, 10, 1, 1, 0xDC00, 1},
-    {5, 10, 1, 1, 0xDFFF, 1},
+    {3, 6, 1, 1, 0xD800, 1},
+    {3, 6, 1, 1, 0xDBFF, 1},
+    {3, 6, 1, 1, 0xDC00, 1},
+    {3, 6, 1, 1, 0xDFFF, 1},
 
-    {5, 10, 2, 3, 0xD800, 2},
-    {5, 10, 2, 3, 0xDBFF, 2},
-    {5, 10, 2, 3, 0xDC00, 2},
-    {5, 10, 2, 3, 0xDFFF, 2},
-
-    // dont replace anything, just show the surrogate pair
-    {5, 10, 3, 6, u'b', 0},
+    {3, 6, 2, 3, 0xD800, 2},
+    {3, 6, 2, 3, 0xDBFF, 2},
+    {3, 6, 2, 3, 0xDC00, 2},
+    {3, 6, 2, 3, 0xDFFF, 2},
 
     // make the leading surrogate a trailing one
     {5, 10, 3, 6, 0xDC00, 3},
@@ -1382,6 +1379,10 @@ ucs2_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     // make the trailing surrogate a BMP char
     {5, 10, 3, 6, u'z', 4},
 
+    // don't replace anything in the test cases bellow, just show the surrogate
+    // pair (fourth CP) fully or partially
+    {5, 10, 3, 6, u'b', 0},
+
     {5, 7, 3, 6, u'b', 0}, // no space for fourth CP
     {5, 8, 3, 6, u'b', 0}, // no space for fourth CP
     {5, 9, 3, 6, u'b', 0}, // no space for fourth CP
@@ -1390,7 +1391,6 @@ ucs2_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     {4, 7, 3, 6, u'b', 0},  // incomplete fourth CP, and no space for it
     {4, 8, 3, 6, u'b', 0},  // incomplete fourth CP, and no space for it
     {4, 9, 3, 6, u'b', 0},  // incomplete fourth CP, and no space for it
-
   };
 
   for (auto t : offsets)
@@ -1980,9 +1980,18 @@ utf16_to_ucs2_in_error (const std::codecvt<InternT, char, mbstate_t> &cvt,
     // make the trailing surrogate a BMP char
     {10, 5, 6, 3, u'z', 4},
 
-    // don't repalce anything, just show the paired surrogates
-    {8, 5, 6, 3, u'b', 0},
+    // don't replace anything in the test cases bellow, just show the surrogate
+    // pair (fourth CP) fully or partially
     {10, 5, 6, 3, u'b', 0},
+
+    {7, 5, 6, 3, u'b', 0},
+    {8, 5, 6, 3, u'b', 0},
+    {9, 5, 6, 3, u'b', 0},
+
+    {10, 4, 6, 3, u'b', 0},
+    {7, 4, 6, 3, u'b', 0},
+    {8, 4, 6, 3, u'b', 0},
+    {9, 4, 6, 3, u'b', 0},
   };
 
   for (auto t : offsets)
@@ -2120,16 +2129,44 @@ ucs2_to_utf16_out_error (const std::codecvt<InternT, char, mbstate_t> &cvt,
   utf16_to_bytes (begin (expected), end (expected), begin (exp), endianess);
 
   test_offsets_error<InternT> offsets[] = {
-
-    // Surrogate CP
     {3, 6, 0, 0, 0xD800, 0},
+    {3, 6, 0, 0, 0xDBFF, 0},
+    {3, 6, 0, 0, 0xDC00, 0},
+    {3, 6, 0, 0, 0xDFFF, 0},
+
+    {3, 6, 1, 2, 0xD800, 1},
     {3, 6, 1, 2, 0xDBFF, 1},
+    {3, 6, 1, 2, 0xDC00, 1},
+    {3, 6, 1, 2, 0xDFFF, 1},
+
+    {3, 6, 2, 4, 0xD800, 2},
+    {3, 6, 2, 4, 0xDBFF, 2},
     {3, 6, 2, 4, 0xDC00, 2},
     {3, 6, 2, 4, 0xDFFF, 2},
 
-    // don't replace anything just show the paired surrogate
-    {4, 10, 3, 6, u'b', 0},
+    // make the leading surrogate a trailing one
+    {5, 10, 3, 6, 0xDC00, 3},
+    {5, 10, 3, 6, 0xDFFF, 3},
+
+    // make the trailing surrogate a leading one
+    {5, 10, 3, 6, 0xD800, 4},
+    {5, 10, 3, 6, 0xDBFF, 4},
+
+    // make the trailing surrogate a BMP char
+    {5, 10, 3, 6, u'z', 4},
+
+    // don't replace anything in the test cases bellow, just show the surrogate
+    // pair (fourth CP) fully or partially
     {5, 10, 3, 6, u'b', 0},
+
+    {5, 7, 3, 6, u'b', 0}, // no space for fourth CP
+    {5, 8, 3, 6, u'b', 0}, // no space for fourth CP
+    {5, 9, 3, 6, u'b', 0}, // no space for fourth CP
+
+    {4, 10, 3, 6, u'b', 0}, // incomplete fourth CP
+    {4, 7, 3, 6, u'b', 0},  // incomplete fourth CP, and no space for it
+    {4, 8, 3, 6, u'b', 0},  // incomplete fourth CP, and no space for it
+    {4, 9, 3, 6, u'b', 0},  // incomplete fourth CP, and no space for it
   };
 
   for (auto t : offsets)
