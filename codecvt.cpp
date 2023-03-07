@@ -1382,7 +1382,6 @@ ucs2_to_utf8_out_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
     // don't replace anything in the test cases bellow, just show the surrogate
     // pair (fourth CP) fully or partially
     {5, 10, 3, 6, u'b', 0},
-
     {5, 7, 3, 6, u'b', 0}, // no space for fourth CP
     {5, 8, 3, 6, u'b', 0}, // no space for fourth CP
     {5, 9, 3, 6, u'b', 0}, // no space for fourth CP
@@ -1541,24 +1540,24 @@ utf16_to_utf32_in_partial (const std::codecvt<InternT, char, mbstate_t> &cvt,
 
   test_offsets_partial offsets[] = {
     {2, 0, 0, 0}, // no space for first CP
-    //{1, 1, 0, 0}, // incomplete first CP, TODO
-    //{1, 0, 0, 0}, // incomplete first CP, and no space for it, TODO
+    {1, 1, 0, 0}, // incomplete first CP
+    {1, 0, 0, 0}, // incomplete first CP, and no space for it
 
     {4, 1, 2, 1}, // no space for second CP
-    //{3, 2, 2, 1}, // incomplete second CP, TODO
-    //{3, 1, 2, 1}, // incomplete second CP, and no space for it, TODO
+    {3, 2, 2, 1}, // incomplete second CP
+    {3, 1, 2, 1}, // incomplete second CP, and no space for it
 
     {6, 2, 4, 2}, // no space for third CP
-    //{5, 3, 4, 2}, // incomplete third CP, TODO
-    //{5, 2, 4, 2}, // incomplete third CP, and no space for it, TODO
+    {5, 3, 4, 2}, // incomplete third CP
+    {5, 2, 4, 2}, // incomplete third CP, and no space for it
 
     {10, 3, 6, 3}, // no space for fourth CP
-    //{7, 4, 6, 3},  // incomplete fourth CP, TODO
-    {8, 4, 6, 3}, // incomplete fourth CP
-    //{9, 4, 6, 3},  // incomplete fourth CP, TODO
-    //{7, 3, 6, 3},  // incomplete fourth CP, and no space for it, TODO
-    {8, 3, 6, 3}, // incomplete fourth CP, and no space for it
-    //{9, 3, 6, 3},  // incomplete fourth CP, and no space for it, TODO
+    {7, 4, 6, 3},  // incomplete fourth CP
+    {8, 4, 6, 3},  // incomplete fourth CP
+    {9, 4, 6, 3},  // incomplete fourth CP
+    {7, 3, 6, 3},  // incomplete fourth CP, and no space for it
+    {8, 3, 6, 3},  // incomplete fourth CP, and no space for it
+    {9, 3, 6, 3},  // incomplete fourth CP, and no space for it
   };
 
   for (auto t : offsets)
@@ -1900,16 +1899,16 @@ utf16_to_ucs2_in_partial (const std::codecvt<InternT, char, mbstate_t> &cvt,
 
   test_offsets_partial offsets[] = {
     {2, 0, 0, 0}, // no space for first CP
-    //{1, 1, 0, 0}, // incomplete first CP, TODO
-    //{1, 0, 0, 0}, // incomplete first CP, and no space for it, TODO
+    {1, 1, 0, 0}, // incomplete first CP
+    {1, 0, 0, 0}, // incomplete first CP, and no space for it
 
     {4, 1, 2, 1}, // no space for second CP
-    //{3, 2, 2, 1}, // incomplete second CP, TODO
-    //{3, 1, 2, 1}, // incomplete second CP, and no space for it, TODO
+    {3, 2, 2, 1}, // incomplete second CP
+    {3, 1, 2, 1}, // incomplete second CP, and no space for it
 
     {6, 2, 4, 2}, // no space for third CP
-    //{5, 3, 4, 2}, // incomplete third CP, TODO
-    //{5, 2, 4, 2}, // incomplete third CP, and no space for it, TODO
+    {5, 3, 4, 2}, // incomplete third CP
+    {5, 2, 4, 2}, // incomplete third CP, and no space for it
   };
 
   for (auto t : offsets)
@@ -1981,15 +1980,12 @@ utf16_to_ucs2_in_error (const std::codecvt<InternT, char, mbstate_t> &cvt,
     {10, 5, 6, 3, u'z', 4},
 
     // don't replace anything in the test cases bellow, just show the surrogate
-    // pair (fourth CP) fully or partially
+    // pair (fourth CP) fully or partially (just the first surrogate)
     {10, 5, 6, 3, u'b', 0},
-
-    {7, 5, 6, 3, u'b', 0},
     {8, 5, 6, 3, u'b', 0},
     {9, 5, 6, 3, u'b', 0},
 
     {10, 4, 6, 3, u'b', 0},
-    {7, 4, 6, 3, u'b', 0},
     {8, 4, 6, 3, u'b', 0},
     {9, 4, 6, 3, u'b', 0},
   };
@@ -2156,17 +2152,14 @@ ucs2_to_utf16_out_error (const std::codecvt<InternT, char, mbstate_t> &cvt,
     {5, 10, 3, 6, u'z', 4},
 
     // don't replace anything in the test cases bellow, just show the surrogate
-    // pair (fourth CP) fully or partially
+    // pair (fourth CP) fully or partially (just the first surrogate)
     {5, 10, 3, 6, u'b', 0},
+    {5, 8, 3, 6, u'b', 0},
+    {5, 9, 3, 6, u'b', 0},
 
-    //{5, 7, 3, 6, u'b', 0}, // no space for fourth CP, TODO
-    {5, 8, 3, 6, u'b', 0}, // no space for fourth CP
-    {5, 9, 3, 6, u'b', 0}, // no space for fourth CP
-
-    {4, 10, 3, 6, u'b', 0}, // incomplete fourth CP
-    //{4, 7, 3, 6, u'b', 0}, // incomplete fourth CP, and no space for it, TODO
-    {4, 8, 3, 6, u'b', 0}, // incomplete fourth CP, and no space for it
-    {4, 9, 3, 6, u'b', 0}, // incomplete fourth CP, and no space for it
+    {4, 10, 3, 6, u'b', 0},
+    {4, 8, 3, 6, u'b', 0},
+    {4, 9, 3, 6, u'b', 0},
   };
 
   for (auto t : offsets)
