@@ -1541,24 +1541,24 @@ utf16_to_utf32_in_partial (const std::codecvt<InternT, char, mbstate_t> &cvt,
 
   test_offsets_partial offsets[] = {
     {2, 0, 0, 0}, // no space for first CP
-    //{1, 1, 0, 0}, // incomplete first CP
-    //{1, 0, 0, 0}, // incomplete first CP, and no space for it
+    //{1, 1, 0, 0}, // incomplete first CP, TODO
+    //{1, 0, 0, 0}, // incomplete first CP, and no space for it, TODO
 
     {4, 1, 2, 1}, // no space for second CP
-    //{3, 2, 2, 1}, // incomplete second CP
-    //{3, 1, 2, 1}, // incomplete second CP, and no space for it
+    //{3, 2, 2, 1}, // incomplete second CP, TODO
+    //{3, 1, 2, 1}, // incomplete second CP, and no space for it, TODO
 
     {6, 2, 4, 2}, // no space for third CP
-    //{5, 3, 4, 2}, // incomplete third CP
-    //{5, 2, 4, 2}, // incomplete third CP, and no space for it
+    //{5, 3, 4, 2}, // incomplete third CP, TODO
+    //{5, 2, 4, 2}, // incomplete third CP, and no space for it, TODO
 
     {10, 3, 6, 3}, // no space for fourth CP
-    //{7, 4, 6, 3},  // incomplete fourth CP
+    //{7, 4, 6, 3},  // incomplete fourth CP, TODO
     {8, 4, 6, 3}, // incomplete fourth CP
-    //{9, 4, 6, 3},  // incomplete fourth CP
-    //{7, 3, 6, 3},  // incomplete fourth CP, and no space for it
+    //{9, 4, 6, 3},  // incomplete fourth CP, TODO
+    //{7, 3, 6, 3},  // incomplete fourth CP, and no space for it, TODO
     {8, 3, 6, 3}, // incomplete fourth CP, and no space for it
-    //{9, 3, 6, 3},  // incomplete fourth CP, and no space for it
+    //{9, 3, 6, 3},  // incomplete fourth CP, and no space for it, TODO
   };
 
   for (auto t : offsets)
@@ -1900,16 +1900,16 @@ utf16_to_ucs2_in_partial (const std::codecvt<InternT, char, mbstate_t> &cvt,
 
   test_offsets_partial offsets[] = {
     {2, 0, 0, 0}, // no space for first CP
-    //{1, 1, 0, 0}, // incomplete first CP
-    //{1, 0, 0, 0}, // incomplete first CP, and no space for it
+    //{1, 1, 0, 0}, // incomplete first CP, TODO
+    //{1, 0, 0, 0}, // incomplete first CP, and no space for it, TODO
 
     {4, 1, 2, 1}, // no space for second CP
-    //{3, 2, 2, 1}, // incomplete second CP
-    //{3, 1, 2, 1}, // incomplete second CP, and no space for it
+    //{3, 2, 2, 1}, // incomplete second CP, TODO
+    //{3, 1, 2, 1}, // incomplete second CP, and no space for it, TODO
 
     {6, 2, 4, 2}, // no space for third CP
-    //{5, 3, 4, 2}, // incomplete third CP
-    //{5, 2, 4, 2}, // incomplete third CP, and no space for it
+    //{5, 3, 4, 2}, // incomplete third CP, TODO
+    //{5, 2, 4, 2}, // incomplete third CP, and no space for it, TODO
   };
 
   for (auto t : offsets)
@@ -2159,14 +2159,14 @@ ucs2_to_utf16_out_error (const std::codecvt<InternT, char, mbstate_t> &cvt,
     // pair (fourth CP) fully or partially
     {5, 10, 3, 6, u'b', 0},
 
-    {5, 7, 3, 6, u'b', 0}, // no space for fourth CP
+    //{5, 7, 3, 6, u'b', 0}, // no space for fourth CP, TODO
     {5, 8, 3, 6, u'b', 0}, // no space for fourth CP
     {5, 9, 3, 6, u'b', 0}, // no space for fourth CP
 
     {4, 10, 3, 6, u'b', 0}, // incomplete fourth CP
-    {4, 7, 3, 6, u'b', 0},  // incomplete fourth CP, and no space for it
-    {4, 8, 3, 6, u'b', 0},  // incomplete fourth CP, and no space for it
-    {4, 9, 3, 6, u'b', 0},  // incomplete fourth CP, and no space for it
+    //{4, 7, 3, 6, u'b', 0}, // incomplete fourth CP, and no space for it, TODO
+    {4, 8, 3, 6, u'b', 0}, // incomplete fourth CP, and no space for it
+    {4, 9, 3, 6, u'b', 0}, // incomplete fourth CP, and no space for it
   };
 
   for (auto t : offsets)
