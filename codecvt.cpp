@@ -187,7 +187,7 @@ utf8_to_utf32_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   // 1. Missing leading byte
   // 2. Missing trailing byte
   // 3. Surrogate CP
-  // 4. Ovelong sequence
+  // 4. Overlong sequence
   // 5. CP out of Unicode range
   test_offsets_error<unsigned char> offsets[] = {
 
@@ -641,7 +641,7 @@ utf8_to_utf16_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   // 1. Missing leading byte
   // 2. Missing trailing byte
   // 3. Surrogate CP
-  // 4. Ovelong sequence
+  // 4. Overlong sequence
   // 5. CP out of Unicode range
   test_offsets_error<unsigned char> offsets[] = {
 
@@ -1104,7 +1104,7 @@ utf8_to_ucs2_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   // 1. Missing leading byte
   // 2. Missing trailing byte
   // 3. Surrogate CP
-  // 4. Ovelong sequence
+  // 4. Overlong sequence
   // 5. CP out of Unicode range
   test_offsets_error<unsigned char> offsets[] = {
 
