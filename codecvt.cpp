@@ -308,8 +308,8 @@ void utf32_to_utf8_out_ok(const std::codecvt<InternT, ExternT, mbstate_t>& cvt) 
   assert(char_traits<InternT>::length(in) == 4);
   assert(char_traits<ExternT>::length(exp) == 10);
 
-  const test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}, {4, 10}};
-  for (const test_offsets_ok* it = begin(offsets); it != end(offsets); ++it) {
+  test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}, {4, 10}};
+  for (test_offsets_ok* it = begin(offsets); it != end(offsets); ++it) {
     test_offsets_ok t                = *it;
     ExternT out[array_size(exp) - 1] = {};
     assert(t.in_size <= array_size(in));
@@ -344,7 +344,7 @@ void utf32_to_utf8_out_partial(const std::codecvt<InternT, ExternT, mbstate_t>& 
   assert(char_traits<InternT>::length(in) == 4);
   assert(char_traits<ExternT>::length(exp) == 10);
 
-  const test_offsets_partial offsets[] = {
+  test_offsets_partial offsets[] = {
       {1, 0, 0, 0}, // no space for first CP
 
       {2, 1, 1, 1}, // no space for second CP
@@ -359,7 +359,7 @@ void utf32_to_utf8_out_partial(const std::codecvt<InternT, ExternT, mbstate_t>& 
       {4, 8, 3, 6}, // no space for fourth CP
       {4, 9, 3, 6}, // no space for fourth CP
   };
-  for (const test_offsets_partial* it = begin(offsets); it != end(offsets); ++it) {
+  for (test_offsets_partial* it = begin(offsets); it != end(offsets); ++it) {
     test_offsets_partial t           = *it;
     ExternT out[array_size(exp) - 1] = {};
     assert(t.in_size <= array_size(in));
@@ -727,8 +727,8 @@ void utf16_to_utf8_out_ok(const std::codecvt<InternT, ExternT, mbstate_t>& cvt) 
   assert(char_traits<InternT>::length(in) == 5);
   assert(char_traits<ExternT>::length(exp) == 10);
 
-  const test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}, {5, 10}};
-  for (const test_offsets_ok* it = begin(offsets); it != end(offsets); ++it) {
+  test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}, {5, 10}};
+  for (test_offsets_ok* it = begin(offsets); it != end(offsets); ++it) {
     test_offsets_ok t                = *it;
     ExternT out[array_size(exp) - 1] = {};
     assert(t.in_size <= array_size(in));
@@ -763,7 +763,7 @@ void utf16_to_utf8_out_partial(const std::codecvt<InternT, ExternT, mbstate_t>& 
   assert(char_traits<InternT>::length(in) == 5);
   assert(char_traits<ExternT>::length(exp) == 10);
 
-  const test_offsets_partial offsets[] = {
+  test_offsets_partial offsets[] = {
       {1, 0, 0, 0}, // no space for first CP
 
       {2, 1, 1, 1}, // no space for second CP
@@ -785,7 +785,7 @@ void utf16_to_utf8_out_partial(const std::codecvt<InternT, ExternT, mbstate_t>& 
       {4, 8, 3, 6}, // incomplete fourth CP, and no space for it
       {4, 9, 3, 6}, // incomplete fourth CP, and no space for it
   };
-  for (const test_offsets_partial* it = begin(offsets); it != end(offsets); ++it) {
+  for (test_offsets_partial* it = begin(offsets); it != end(offsets); ++it) {
     test_offsets_partial t           = *it;
     ExternT out[array_size(exp) - 1] = {};
     assert(t.in_size <= array_size(in));
@@ -1166,8 +1166,8 @@ void ucs2_to_utf8_out_ok(const std::codecvt<InternT, ExternT, mbstate_t>& cvt) {
   assert(char_traits<InternT>::length(in) == 3);
   assert(char_traits<ExternT>::length(exp) == 6);
 
-  const test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}};
-  for (const test_offsets_ok* it = begin(offsets); it != end(offsets); ++it) {
+  test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}};
+  for (test_offsets_ok* it = begin(offsets); it != end(offsets); ++it) {
     test_offsets_ok t                = *it;
     ExternT out[array_size(exp) - 1] = {};
     assert(t.in_size <= array_size(in));
@@ -1202,7 +1202,7 @@ void ucs2_to_utf8_out_partial(const std::codecvt<InternT, ExternT, mbstate_t>& c
   assert(char_traits<InternT>::length(in) == 3);
   assert(char_traits<ExternT>::length(exp) == 6);
 
-  const test_offsets_partial offsets[] = {
+  test_offsets_partial offsets[] = {
       {1, 0, 0, 0}, // no space for first CP
 
       {2, 1, 1, 1}, // no space for second CP
@@ -1212,7 +1212,7 @@ void ucs2_to_utf8_out_partial(const std::codecvt<InternT, ExternT, mbstate_t>& c
       {3, 4, 2, 3}, // no space for third CP
       {3, 5, 2, 3}, // no space for third CP
   };
-  for (const test_offsets_partial* it = begin(offsets); it != end(offsets); ++it) {
+  for (test_offsets_partial* it = begin(offsets); it != end(offsets); ++it) {
     test_offsets_partial t           = *it;
     ExternT out[array_size(exp) - 1] = {};
     assert(t.in_size <= array_size(in));
@@ -1534,8 +1534,8 @@ void utf32_to_utf16_out_ok(const std::codecvt<InternT, char, mbstate_t>& cvt, ut
   copy(begin(input), end(input), begin(in));
   utf16_to_bytes(begin(expected), end(expected), begin(exp), endianess);
 
-  const test_offsets_ok offsets[] = {{0, 0}, {1, 2}, {2, 4}, {3, 6}, {4, 10}};
-  for (const test_offsets_ok* it = begin(offsets); it != end(offsets); ++it) {
+  test_offsets_ok offsets[] = {{0, 0}, {1, 2}, {2, 4}, {3, 6}, {4, 10}};
+  for (test_offsets_ok* it = begin(offsets); it != end(offsets); ++it) {
     test_offsets_ok t             = *it;
     char out[array_size(exp) - 2] = {};
     assert(t.in_size <= array_size(in));
@@ -1567,7 +1567,7 @@ void utf32_to_utf16_out_partial(const std::codecvt<InternT, char, mbstate_t>& cv
   copy(begin(input), end(input), begin(in));
   utf16_to_bytes(begin(expected), end(expected), begin(exp), endianess);
 
-  const test_offsets_partial offsets[] = {
+  test_offsets_partial offsets[] = {
       {1, 0, 0, 0}, // no space for first CP
       {1, 1, 0, 0}, // no space for first CP
 
@@ -1582,7 +1582,7 @@ void utf32_to_utf16_out_partial(const std::codecvt<InternT, char, mbstate_t>& cv
       {4, 8, 3, 6}, // no space for fourth CP
       {4, 9, 3, 6}, // no space for fourth CP
   };
-  for (const test_offsets_partial* it = begin(offsets); it != end(offsets); ++it) {
+  for (test_offsets_partial* it = begin(offsets); it != end(offsets); ++it) {
     test_offsets_partial t        = *it;
     char out[array_size(exp) - 2] = {};
     assert(t.in_size <= array_size(in));
@@ -1859,8 +1859,8 @@ void ucs2_to_utf16_out_ok(const std::codecvt<InternT, char, mbstate_t>& cvt, utf
   copy(begin(input), end(input), begin(in));
   utf16_to_bytes(begin(expected), end(expected), begin(exp), endianess);
 
-  const test_offsets_ok offsets[] = {{0, 0}, {1, 2}, {2, 4}, {3, 6}};
-  for (const test_offsets_ok* it = begin(offsets); it != end(offsets); ++it) {
+  test_offsets_ok offsets[] = {{0, 0}, {1, 2}, {2, 4}, {3, 6}};
+  for (test_offsets_ok* it = begin(offsets); it != end(offsets); ++it) {
     test_offsets_ok t             = *it;
     char out[array_size(exp) - 2] = {};
     assert(t.in_size <= array_size(in));
@@ -1892,7 +1892,7 @@ void ucs2_to_utf16_out_partial(const std::codecvt<InternT, char, mbstate_t>& cvt
   copy(begin(input), end(input), begin(in));
   utf16_to_bytes(begin(expected), end(expected), begin(exp), endianess);
 
-  const test_offsets_partial offsets[] = {
+  test_offsets_partial offsets[] = {
       {1, 0, 0, 0}, // no space for first CP
       {1, 1, 0, 0}, // no space for first CP
 
@@ -1902,7 +1902,7 @@ void ucs2_to_utf16_out_partial(const std::codecvt<InternT, char, mbstate_t>& cvt
       {3, 4, 2, 4}, // no space for third CP
       {3, 5, 2, 4}, // no space for third CP
   };
-  for (const test_offsets_partial* it = begin(offsets); it != end(offsets); ++it) {
+  for (test_offsets_partial* it = begin(offsets); it != end(offsets); ++it) {
     test_offsets_partial t        = *it;
     char out[array_size(exp) - 2] = {};
     assert(t.in_size <= array_size(in));
