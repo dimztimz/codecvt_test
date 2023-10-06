@@ -1,6 +1,7 @@
 // Copyright 2020-2023 Dimitrij Mijoski
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#define _LIBCPP_DISABLE_DEPRECATION_WARNINGS
 #include <cassert>
 #include <codecvt>
 #include <cstdio>
