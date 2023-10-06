@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #define _LIBCPP_DISABLE_DEPRECATION_WARNINGS
+#include <algorithm>
 #include <cassert>
 #include <codecvt>
-#include <cstdio>
 #include <locale>
+#include <string>
 
 struct test_offsets_ok {
   size_t in_size;
