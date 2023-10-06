@@ -1655,7 +1655,7 @@ void utf32_to_utf16_out_error(const std::codecvt<InternT, char, mbstate_t>& cvt,
     assert(t.out_size <= array_size(out));
     assert(t.expected_in_next <= t.in_size);
     assert(t.expected_out_next <= t.out_size);
-    char32_t old_char = in[t.replace_pos];
+    InternT old_char  = in[t.replace_pos];
     in[t.replace_pos] = t.replace_char;
 
     mbstate_t state          = {};
