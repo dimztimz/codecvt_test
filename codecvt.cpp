@@ -1420,7 +1420,6 @@ void utf16_to_utf32_in_partial(const std::codecvt<InternT, char, mbstate_t>& cvt
 
   char in[array_size(input) * 2];
   InternT exp[array_size(expected)];
-  char* in_iter = begin(in);
   utf16_to_bytes(begin(input), end(input), begin(in), endianess);
   copy(begin(expected), end(expected), begin(exp));
 
@@ -1749,7 +1748,6 @@ void utf16_to_ucs2_in_partial(const std::codecvt<InternT, char, mbstate_t>& cvt,
 
   char in[array_size(input) * 2];
   InternT exp[array_size(expected)];
-  char* in_iter = begin(in);
   utf16_to_bytes(begin(input), end(input), begin(in), endianess);
   copy(begin(expected), end(expected), begin(exp));
 
