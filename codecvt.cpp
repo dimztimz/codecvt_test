@@ -51,7 +51,6 @@ void utf8_to_utf32_in_ok(const std::codecvt<InternT, ExternT, mbstate_t>& cvt) {
   copy(begin(expected), end(expected), begin(exp));
   assert(char_traits<ExternT>::length(in) == 10);
   assert(char_traits<InternT>::length(exp) == 4);
-  begin(in);
   test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {3, 2}, {6, 3}, {10, 4}};
   for (test_offsets_ok* it = begin(offsets); it != end(offsets); ++it) {
     test_offsets_ok t                = *it;
