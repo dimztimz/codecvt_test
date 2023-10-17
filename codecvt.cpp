@@ -1,6 +1,7 @@
 // Copyright 2020-2023 Dimitrij Mijoski
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <algorithm>
 #include <codecvt>
 #include <cstdio>
 #include <locale>
@@ -333,7 +334,7 @@ utf32_to_utf8_out_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   VERIFY (char_traits<InternT>::length (in) == 4);
   VERIFY (char_traits<ExternT>::length (exp) == 10);
 
-  const test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}, {4, 10}};
+  test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}, {4, 10}};
   for (auto t : offsets)
     {
       ExternT out[array_size (exp) - 1] = {};
@@ -373,7 +374,7 @@ utf32_to_utf8_out_partial (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   VERIFY (char_traits<InternT>::length (in) == 4);
   VERIFY (char_traits<ExternT>::length (exp) == 10);
 
-  const test_offsets_partial offsets[] = {
+  test_offsets_partial offsets[] = {
     {1, 0, 0, 0}, // no space for first CP
 
     {2, 1, 1, 1}, // no space for second CP
@@ -787,7 +788,7 @@ utf16_to_utf8_out_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   VERIFY (char_traits<InternT>::length (in) == 5);
   VERIFY (char_traits<ExternT>::length (exp) == 10);
 
-  const test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}, {5, 10}};
+  test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}, {5, 10}};
   for (auto t : offsets)
     {
       ExternT out[array_size (exp) - 1] = {};
@@ -827,7 +828,7 @@ utf16_to_utf8_out_partial (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   VERIFY (char_traits<InternT>::length (in) == 5);
   VERIFY (char_traits<ExternT>::length (exp) == 10);
 
-  const test_offsets_partial offsets[] = {
+  test_offsets_partial offsets[] = {
     {1, 0, 0, 0}, // no space for first CP
 
     {2, 1, 1, 1}, // no space for second CP
@@ -1261,7 +1262,7 @@ ucs2_to_utf8_out_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   VERIFY (char_traits<InternT>::length (in) == 3);
   VERIFY (char_traits<ExternT>::length (exp) == 6);
 
-  const test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}};
+  test_offsets_ok offsets[] = {{0, 0}, {1, 1}, {2, 3}, {3, 6}};
   for (auto t : offsets)
     {
       ExternT out[array_size (exp) - 1] = {};
@@ -1301,7 +1302,7 @@ ucs2_to_utf8_out_partial (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
   VERIFY (char_traits<InternT>::length (in) == 3);
   VERIFY (char_traits<ExternT>::length (exp) == 6);
 
-  const test_offsets_partial offsets[] = {
+  test_offsets_partial offsets[] = {
     {1, 0, 0, 0}, // no space for first CP
 
     {2, 1, 1, 1}, // no space for second CP
@@ -1534,7 +1535,6 @@ utf16_to_utf32_in_partial (const std::codecvt<InternT, char, mbstate_t> &cvt,
 
   char in[array_size (input) * 2];
   InternT exp[array_size (expected)];
-  auto in_iter = begin (in);
   utf16_to_bytes (begin (input), end (input), begin (in), endianess);
   copy (begin (expected), end (expected), begin (exp));
 
@@ -1675,7 +1675,7 @@ utf32_to_utf16_out_ok (const std::codecvt<InternT, char, mbstate_t> &cvt,
   copy (begin (input), end (input), begin (in));
   utf16_to_bytes (begin (expected), end (expected), begin (exp), endianess);
 
-  const test_offsets_ok offsets[] = {{0, 0}, {1, 2}, {2, 4}, {3, 6}, {4, 10}};
+  test_offsets_ok offsets[] = {{0, 0}, {1, 2}, {2, 4}, {3, 6}, {4, 10}};
   for (auto t : offsets)
     {
       char out[array_size (exp) - 2] = {};
@@ -1713,7 +1713,7 @@ utf32_to_utf16_out_partial (const std::codecvt<InternT, char, mbstate_t> &cvt,
   copy (begin (input), end (input), begin (in));
   utf16_to_bytes (begin (expected), end (expected), begin (exp), endianess);
 
-  const test_offsets_partial offsets[] = {
+  test_offsets_partial offsets[] = {
     {1, 0, 0, 0}, // no space for first CP
     {1, 1, 0, 0}, // no space for first CP
 
@@ -1893,7 +1893,6 @@ utf16_to_ucs2_in_partial (const std::codecvt<InternT, char, mbstate_t> &cvt,
 
   char in[array_size (input) * 2];
   InternT exp[array_size (expected)];
-  auto in_iter = begin (in);
   utf16_to_bytes (begin (input), end (input), begin (in), endianess);
   copy (begin (expected), end (expected), begin (exp));
 
@@ -2037,7 +2036,7 @@ ucs2_to_utf16_out_ok (const std::codecvt<InternT, char, mbstate_t> &cvt,
   copy (begin (input), end (input), begin (in));
   utf16_to_bytes (begin (expected), end (expected), begin (exp), endianess);
 
-  const test_offsets_ok offsets[] = {{0, 0}, {1, 2}, {2, 4}, {3, 6}};
+  test_offsets_ok offsets[] = {{0, 0}, {1, 2}, {2, 4}, {3, 6}};
   for (auto t : offsets)
     {
       char out[array_size (exp) - 2] = {};
@@ -2075,7 +2074,7 @@ ucs2_to_utf16_out_partial (const std::codecvt<InternT, char, mbstate_t> &cvt,
   copy (begin (input), end (input), begin (in));
   utf16_to_bytes (begin (expected), end (expected), begin (exp), endianess);
 
-  const test_offsets_partial offsets[] = {
+  test_offsets_partial offsets[] = {
     {1, 0, 0, 0}, // no space for first CP
     {1, 1, 0, 0}, // no space for first CP
 
