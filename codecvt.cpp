@@ -6,7 +6,6 @@
 #include <cassert>
 #include <codecvt>
 #include <locale>
-#include <string>
 
 struct test_offsets_ok {
   size_t in_size;
