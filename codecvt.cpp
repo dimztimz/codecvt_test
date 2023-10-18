@@ -82,7 +82,8 @@ utf8_to_utf32_in_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, t.out_size);
-      VERIFY (len == t.in_size);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.in_size);
     }
 
   for (auto t : offsets)
@@ -106,7 +107,8 @@ utf8_to_utf32_in_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, array_size (out));
-      VERIFY (len == t.in_size);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.in_size);
     }
 }
 
@@ -174,7 +176,8 @@ utf8_to_utf32_in_partial (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, t.out_size);
-      VERIFY (len == t.expected_in_next);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.expected_in_next);
     }
 }
 
@@ -317,7 +320,8 @@ utf8_to_utf32_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, t.out_size);
-      VERIFY (len == t.expected_in_next);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.expected_in_next);
 
       in[t.replace_pos] = old_char;
     }
@@ -547,7 +551,8 @@ utf8_to_utf16_in_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, t.out_size);
-      VERIFY (len == t.in_size);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.in_size);
     }
 
   for (auto t : offsets)
@@ -571,7 +576,8 @@ utf8_to_utf16_in_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, array_size (out));
-      VERIFY (len == t.in_size);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.in_size);
     }
 }
 
@@ -644,7 +650,8 @@ utf8_to_utf16_in_partial (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, t.out_size);
-      VERIFY (len == t.expected_in_next);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.expected_in_next);
     }
 }
 
@@ -787,7 +794,8 @@ utf8_to_utf16_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, t.out_size);
-      VERIFY (len == t.expected_in_next);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.expected_in_next);
 
       in[t.replace_pos] = old_char;
     }
@@ -1040,7 +1048,8 @@ utf8_to_ucs2_in_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, t.out_size);
-      VERIFY (len == t.in_size);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.in_size);
     }
 
   for (auto t : offsets)
@@ -1064,7 +1073,8 @@ utf8_to_ucs2_in_ok (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, array_size (out));
-      VERIFY (len == t.in_size);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.in_size);
     }
 }
 
@@ -1124,7 +1134,8 @@ utf8_to_ucs2_in_partial (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, t.out_size);
-      VERIFY (len == t.expected_in_next);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.expected_in_next);
     }
 }
 
@@ -1277,7 +1288,8 @@ utf8_to_ucs2_in_error (const std::codecvt<InternT, ExternT, mbstate_t> &cvt)
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, t.out_size);
-      VERIFY (len == t.expected_in_next);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.expected_in_next);
 
       in[t.replace_pos] = old_char;
     }
@@ -1550,7 +1562,8 @@ utf16_to_utf32_in_ok (const std::codecvt<InternT, char, mbstate_t> &cvt,
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, t.out_size);
-      VERIFY (len == t.in_size);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.in_size);
     }
 
   for (auto t : offsets)
@@ -1574,7 +1587,8 @@ utf16_to_utf32_in_ok (const std::codecvt<InternT, char, mbstate_t> &cvt,
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, array_size (out));
-      VERIFY (len == t.in_size);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.in_size);
     }
 }
 
@@ -1640,7 +1654,8 @@ utf16_to_utf32_in_partial (const std::codecvt<InternT, char, mbstate_t> &cvt,
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, t.out_size);
-      VERIFY (len == t.expected_in_next);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.expected_in_next);
     }
 }
 
@@ -1717,7 +1732,8 @@ utf16_to_utf32_in_error (const std::codecvt<InternT, char, mbstate_t> &cvt,
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, t.out_size);
-      VERIFY (len == t.expected_in_next);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.expected_in_next);
 
       input[t.replace_pos] = old_char;
     }
@@ -1924,7 +1940,8 @@ utf16_to_ucs2_in_ok (const std::codecvt<InternT, char, mbstate_t> &cvt,
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, t.out_size);
-      VERIFY (len == t.in_size);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.in_size);
     }
 
   for (auto t : offsets)
@@ -1948,7 +1965,8 @@ utf16_to_ucs2_in_ok (const std::codecvt<InternT, char, mbstate_t> &cvt,
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, array_size (out));
-      VERIFY (len == t.in_size);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.in_size);
     }
 }
 
@@ -2006,7 +2024,8 @@ utf16_to_ucs2_in_partial (const std::codecvt<InternT, char, mbstate_t> &cvt,
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, t.out_size);
-      VERIFY (len == t.expected_in_next);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.expected_in_next);
     }
 }
 
@@ -2094,7 +2113,8 @@ utf16_to_ucs2_in_error (const std::codecvt<InternT, char, mbstate_t> &cvt,
 
       state = {};
       auto len = cvt.length (state, in, in + t.in_size, t.out_size);
-      VERIFY (len == t.expected_in_next);
+      VERIFY (len >= 0);
+      VERIFY (static_cast<size_t> (len) == t.expected_in_next);
 
       input[t.replace_pos] = old_char;
     }
